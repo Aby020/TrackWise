@@ -1,0 +1,12 @@
+module.exports = {
+
+    OFFICE_START_HOUR: 9,
+    OFFICE_START_MINUTE: 0,
+
+    EARLY_CHECKIN_HOUR: 8,
+    EARLY_CHECKIN_MINUTE: 30,
+
+    OFFICE_END_HOUR: 17,
+    OFFICE_END_MINUTE: 0
+
+};
