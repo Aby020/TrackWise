@@ -4,10 +4,18 @@
   "description": "TrackWise API — Express + PostgreSQL attendance backend",
   "main": "server.js",
   "scripts": {
+    "prestart": "npm run build",
     "start": "node server.js",
-    "dev": "nodemon server.js",
+    "dev": "nodemon --exec \"npm run build && node server.js\" --watch src --ext js,ts",
     "db:setup": "node -e \"require('./src/database/setup')().catch((e) => { console.error(e); process.exit(1); })\"",
-    "db:check": "node -e \"require('dotenv').config({ quiet: true }); const p = require('./src/database/db'); p.query('SELECT 1').then(() => { console.log('Database connection OK'); return p.end(); }).catch((e) => { console.error('Database connection FAILED:', e.message); process.exit(1); });\""
+    "db:check": "node -e \"require('dotenv').config({ quiet: true }); const p = require('./src/database/db'); p.query('SELECT 1').then(() => { console.log('Database connection OK'); return p.end(); }).catch((e) => { console.error('Database connection FAILED:', e.message); process.exit(1); });\"",
+    "build": "tsc && tsc-alias",
+    "typecheck": "tsc --noEmit",
+    "db:generate": "drizzle-kit generate",
+    "db:push": "drizzle-kit push",
+    "db:migrate": "drizzle-kit migrate",
+    "db:studio": "drizzle-kit studio",
+    "db:seed": "tsx src/db/seed.ts"
   },
   "keywords": [],
   "author": "AbiLabs",
@@ -17,12 +25,23 @@
     "bcrypt": "^6.0.0",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
+    "drizzle-orm": "^0.45.3",
     "express": "^5.2.1",
     "express-validator": "^7.3.2",
     "jsonwebtoken": "^9.0.3",
-    "pg": "^8.22.0"
+    "pg": "^8.22.0",
+    "zod": "^4.6.5"
   },
   "devDependencies": {
-    "nodemon": "^3.1.14"
+    "@types/bcrypt": "^6.0.0",
+    "@types/express": "^5.0.6",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/node": "^26.6.3",
+    "@types/pg": "^8.23.1",
+    "drizzle-kit": "^0.31.11",
+    "nodemon": "^3.1.14",
+    "tsc-alias": "^1.9.5",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2"
   }
 }

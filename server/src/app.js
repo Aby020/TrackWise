@@ -1,10 +1,13 @@
 const express = require("express");
 const cors = require("cors");
+const path = require("path");
 
 const adminRoutes = require("./routes/admin.routes");
 const indexRoutes = require("./routes/index.routes");
 const authRoutes = require("./routes/auth.routes");
 const attendanceRoutes = require("./routes/attendance.routes");
+
+const shiftRoutes = require(path.join(__dirname, "..", "dist", "routes", "shift.routes.js")).default;
 
 const app = express();
 
@@ -33,6 +36,7 @@ app.use("/", indexRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/attendance", attendanceRoutes);
+app.use("/api/admin/shifts", shiftRoutes);
 
 // JSON 404 for unknown API routes (never the HTML catch-all).
 app.use("/api", (req, res) => {
