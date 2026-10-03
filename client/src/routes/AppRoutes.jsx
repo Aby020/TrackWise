@@ -3,6 +3,7 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 import ProtectedRoute from "./ProtectedRoute";
 import AdminRoute from "./AdminRoute";
 import { AppShell } from "../components/layout/AppShell";
+import { GlobalHeader } from "../components/layout/GlobalHeader";
 import { PageLoader } from "../components/layout/PageLoader";
 
 const LandingPage = lazy(() => import("../pages/LandingPage"));
@@ -17,6 +18,24 @@ const Employees = lazy(() => import("../pages/admin/Employees"));
 const AddEmployee = lazy(() => import("../pages/admin/AddEmployee"));
 const EditEmployee = lazy(() => import("../pages/admin/EditEmployee"));
 const NotFound = lazy(() => import("../pages/error/NotFound"));
+
+function MarketingShell({ children }) {
+  return (
+    <div className="min-h-screen bg-canvas">
+      <GlobalHeader />
+      {children}
+    </div>
+  );
+}
+
+function AuthShell({ children }) {
+  return (
+    <div className="min-h-screen bg-canvas">
+      <GlobalHeader />
+      {children}
+    </div>
+  );
+}
 
 function EmployeeShell({ children }) {
   return (
@@ -39,9 +58,30 @@ function AppRoutes() {
     <BrowserRouter>
       <Suspense fallback={<PageLoader />}>
         <Routes>
-          <Route path="/" element={<LandingPage />} />
-          <Route path="/activate" element={<ActivateAccount />} />
-          <Route path="/login" element={<Login />} />
+          <Route
+            path="/"
+            element={
+              <MarketingShell>
+                <LandingPage />
+              </MarketingShell>
+            }
+          />
+          <Route
+            path="/activate"
+            element={
+              <AuthShell>
+                <ActivateAccount />
+              </AuthShell>
+            }
+          />
+          <Route
+            path="/login"
+            element={
+              <AuthShell>
+                <Login />
+              </AuthShell>
+            }
+          />
 
           <Route
             path="/dashboard"

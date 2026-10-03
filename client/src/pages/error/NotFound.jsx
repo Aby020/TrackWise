@@ -15,27 +15,17 @@ function NotFound() {
     : "/";
 
   return (
-    <div className="relative flex min-h-screen flex-col overflow-hidden bg-canvas">
-      <div
-        className="pointer-events-none absolute inset-0"
-        aria-hidden="true"
-      >
-        <span className="absolute -left-24 top-16 h-80 w-80 rounded-full bg-secondary/15 blur-3xl" />
-        <span className="absolute -right-20 bottom-10 h-80 w-80 rounded-full bg-violet/15 blur-3xl" />
-      </div>
-
-      <header className="relative z-10 mx-auto flex w-full max-w-6xl items-center px-6 py-6 lg:px-8">
+    <div className="flex min-h-screen flex-col bg-canvas">
+      <header className="mx-auto flex w-full max-w-6xl items-center px-6 py-6 lg:px-8">
         <Link to="/" aria-label="TrackWise home">
           <Logo variant="dark" />
         </Link>
       </header>
 
-      <main className="relative z-10 mx-auto flex w-full max-w-6xl flex-1 items-center justify-center px-6 py-16 lg:px-8">
+      <main className="mx-auto flex w-full max-w-6xl flex-1 items-center justify-center px-6 py-16 lg:px-8">
         <div className="animate-fade-up text-center">
-          <p className="font-display text-7xl font-bold tracking-tight sm:text-8xl">
-            <span className="bg-gradient-to-r from-primary to-violet bg-clip-text text-transparent">
-              404
-            </span>
+          <p className="font-display text-7xl font-bold tracking-tight text-primary sm:text-8xl">
+            404
           </p>
           <div className="mx-auto mt-6 grid h-12 w-12 place-items-center rounded-xl bg-primary-soft text-primary">
             <Compass className="h-6 w-6" aria-hidden="true" />

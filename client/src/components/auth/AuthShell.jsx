@@ -32,13 +32,6 @@ export function AuthShell({ title, subtitle, children, footer }) {
   return (
     <div className="grid min-h-screen lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
       <aside className="relative hidden overflow-hidden bg-sidebar lg:flex lg:flex-col">
-        <div
-          className="pointer-events-none absolute inset-0"
-          aria-hidden="true"
-        >
-          <span className="absolute -left-24 top-24 h-72 w-72 rounded-full bg-secondary/25 blur-3xl animate-glow-drift" />
-          <span className="absolute bottom-10 right-0 h-80 w-80 rounded-full bg-violet/20 blur-3xl animate-glow-drift [animation-delay:-3s]" />
-        </div>
         <div className="relative flex flex-1 flex-col p-12">
           <Logo variant="light" />
           <div className="mt-auto">

@@ -3,46 +3,50 @@
  * Tailwind v4 theme (CSS-first). Every @theme variable is emitted as a CSS
  * custom property on :root, so components may use var(--color-primary) etc.
  * Do NOT add magic values in components — use tokens.
+ *
+ * Theming model: [data-theme="light"] (default) and [data-theme="dark"].
+ * Semantic tokens are re-declared per theme; components never reference
+ * raw hex values.
  */
 
-@theme {
+@theme inline {
   /* ------------------------------------------------------------------ */
-  /* Brand palette — indigo / violet on a light slate canvas             */
+  /* Brand palette — indigo / violet accent family                       */
   /* ------------------------------------------------------------------ */
-  --color-primary: #4f46e5; /* indigo-600 — primary actions, links       */
-  --color-primary-strong: #4338ca; /* indigo-700 — hover / active          */
-  --color-primary-soft: #eef2ff; /* indigo-50 — soft fills                 */
-  --color-primary-softer: #e0e7ff; /* indigo-100 — hover fills              */
-  --color-secondary: #6366f1; /* indigo-500 — secondary accents           */
-  --color-violet: #7c3aed; /* violet-600 — gradient partner              */
-  --color-violet-soft: #f5f3ff; /* violet-50                                */
+  --color-primary: var(--tw-primary);
+  --color-primary-strong: var(--tw-primary-strong);
+  --color-primary-soft: var(--tw-primary-soft);
+  --color-primary-softer: var(--tw-primary-softer);
+  --color-secondary: var(--tw-secondary);
+  --color-violet: var(--tw-violet);
 
   /* Canvas + surface */
-  --color-canvas: #f6f7fb; /* page background (soft slate-blue)          */
-  --color-surface: #ffffff; /* cards, dialogs, panels                     */
+  --color-canvas: var(--tw-canvas);
+  --color-surface: var(--tw-surface);
+  --color-surface-raised: var(--tw-surface-raised);
 
   /* Text */
-  --color-ink: #0f172a; /* slate-900 — primary text                     */
-  --color-ink-soft: #334155; /* slate-700 — secondary text                 */
-  --color-muted: #64748b; /* slate-500 — muted text                      */
-  --color-faint: #94a3b8; /* slate-400 — captions, placeholders          */
+  --color-ink: var(--tw-ink);
+  --color-ink-soft: var(--tw-ink-soft);
+  --color-muted: var(--tw-muted);
+  --color-faint: var(--tw-faint);
 
   /* Lines */
-  --color-line: #e2e8f0; /* slate-200 — hairlines, inputs                */
-  --color-line-strong: #cbd5e1; /* slate-300 — hover borders                  */
+  --color-line: var(--tw-line);
+  --color-line-strong: var(--tw-line-strong);
 
   /* Dark glass shell */
-  --color-sidebar: #0b1020; /* deep navy shell                            */
+  --color-sidebar: var(--tw-sidebar);
 
   /* Status */
-  --color-success: #059669; /* emerald-600 — on-surface status             */
-  --color-success-soft: #d1fae5; /* emerald-100                                */
-  --color-warning: #b45309; /* amber-700                                   */
-  --color-warning-soft: #fef3c7; /* amber-100                                   */
-  --color-danger: #e11d48; /* rose-600 — destructive                     */
-  --color-danger-soft: #ffe4e6; /* rose-100                                    */
-  --color-info: #2563eb; /* blue-600                                    */
-  --color-info-soft: #dbeafe; /* blue-100                                    */
+  --color-success: var(--tw-success);
+  --color-success-soft: var(--tw-success-soft);
+  --color-warning: var(--tw-warning);
+  --color-warning-soft: var(--tw-warning-soft);
+  --color-danger: var(--tw-danger);
+  --color-danger-soft: var(--tw-danger-soft);
+  --color-info: var(--tw-info);
+  --color-info-soft: var(--tw-info-soft);
 
   /* ------------------------------------------------------------------ */
   /* Typography                                                          */
@@ -55,11 +59,9 @@
   /* ------------------------------------------------------------------ */
   /* Elevation                                                           */
   /* ------------------------------------------------------------------ */
-  --shadow-card: 0 1px 2px rgb(15 23 42 / 0.04), 0 10px 28px -14px rgb(15 23 42 / 0.14);
-  --shadow-pop: 0 14px 40px -10px rgb(15 23 42 / 0.2);
-  --shadow-lift: 0 24px 60px -16px rgb(15 23 42 / 0.28);
-  --shadow-glass: 0 0 60px rgb(99 102 241 / 0.22);
-  --shadow-focus: 0 0 0 4px rgb(79 70 229 / 0.18);
+  --shadow-card: var(--tw-shadow-card);
+  --shadow-pop: var(--tw-shadow-pop);
+  --shadow-lift: var(--tw-shadow-lift);
 
   /* ------------------------------------------------------------------ */
   /* Motion                                                              */
@@ -70,9 +72,9 @@
   --animate-pop: pop 0.28s cubic-bezier(0.34, 1.56, 0.64, 1) both;
   --animate-shimmer: shimmer 1.8s linear infinite;
   --animate-pulse-soft: pulse-soft 2.6s ease-in-out infinite;
-  --animate-glow-drift: glow-drift 10s ease-in-out infinite;
   --animate-spin-slow: spin 2.4s linear infinite;
   --animate-draw: draw 1s cubic-bezier(0.16, 1, 0.3, 1) both;
+  --animate-tick: tick 1s ease-out both;
 
   @keyframes fade-up {
     from {
@@ -131,17 +133,6 @@
       transform: scale(0.92);
     }
   }
-  @keyframes glow-drift {
-    0%,
-    100% {
-      transform: translate3d(0, 0, 0) scale(1);
-      opacity: 0.7;
-    }
-    50% {
-      transform: translate3d(24px, -18px, 0) scale(1.15);
-      opacity: 1;
-    }
-  }
   @keyframes draw {
     from {
       stroke-dashoffset: 1;
@@ -150,4 +141,112 @@
       stroke-dashoffset: 0;
     }
   }
+  @keyframes tick {
+    from {
+      opacity: 0;
+      transform: translateY(-4px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* Light theme (default)                                               */
+/* ------------------------------------------------------------------ */
+:root,
+[data-theme="light"] {
+  --tw-primary: #4f46e5;
+  --tw-primary-strong: #4338ca;
+  --tw-primary-soft: #eef2ff;
+  --tw-primary-softer: #e0e7ff;
+  --tw-secondary: #6366f1;
+  --tw-violet: #7c3aed;
+
+  --tw-canvas: #f6f7fb;
+  --tw-surface: #ffffff;
+  --tw-surface-raised: #ffffff;
+
+  --tw-ink: #0f172a;
+  --tw-ink-soft: #334155;
+  --tw-muted: #64748b;
+  --tw-faint: #94a3b8;
+
+  --tw-line: #e2e8f0;
+  --tw-line-strong: #cbd5e1;
+
+  --tw-sidebar: #0b1020;
+
+  --tw-success: #059669;
+  --tw-success-soft: #d1fae5;
+  --tw-warning: #b45309;
+  --tw-warning-soft: #fef3c7;
+  --tw-danger: #e11d48;
+  --tw-danger-soft: #ffe4e6;
+  --tw-info: #2563eb;
+  --tw-info-soft: #dbeafe;
+
+  --tw-shadow-card: 0 1px 2px rgb(15 23 42 / 0.04),
+    0 10px 28px -14px rgb(15 23 42 / 0.14);
+  --tw-shadow-pop: 0 14px 40px -10px rgb(15 23 42 / 0.2);
+  --tw-shadow-lift: 0 24px 60px -16px rgb(15 23 42 / 0.28);
+
+  color-scheme: light;
+}
+
+/* ------------------------------------------------------------------ */
+/* Dark theme                                                          */
+/* ------------------------------------------------------------------ */
+[data-theme="dark"] {
+  --tw-primary: #818cf8;
+  --tw-primary-strong: #6366f1;
+  --tw-primary-soft: rgb(99 102 241 / 0.14);
+  --tw-primary-softer: rgb(99 102 241 / 0.24);
+  --tw-secondary: #818cf8;
+  --tw-violet: #a78bfa;
+
+  --tw-canvas: #090d16;
+  --tw-surface: #0f172a;
+  --tw-surface-raised: #131c2e;
+
+  --tw-ink: #e8edf6;
+  --tw-ink-soft: #c3cbdc;
+  --tw-muted: #8b97ad;
+  --tw-faint: #5d6a80;
+
+  --tw-line: rgb(148 163 184 / 0.14);
+  --tw-line-strong: rgb(148 163 184 / 0.28);
+
+  --tw-sidebar: #070b13;
+
+  --tw-success: #34d399;
+  --tw-success-soft: rgb(52 211 153 / 0.14);
+  --tw-warning: #fbbf24;
+  --tw-warning-soft: rgb(251 191 36 / 0.14);
+  --tw-danger: #fb7185;
+  --tw-danger-soft: rgb(251 113 133 / 0.14);
+  --tw-info: #60a5fa;
+  --tw-info-soft: rgb(96 165 250 / 0.14);
+
+  --tw-shadow-card: 0 1px 2px rgb(0 0 0 / 0.4),
+    0 10px 28px -14px rgb(0 0 0 / 0.55);
+  --tw-shadow-pop: 0 14px 40px -10px rgb(0 0 0 / 0.6);
+  --tw-shadow-lift: 0 24px 60px -16px rgb(0 0 0 / 0.7);
+
+  color-scheme: dark;
+}
+
+/* Smooth theme cross-fade on toggle */
+html.theme-transition,
+html.theme-transition *,
+html.theme-transition *::before,
+html.theme-transition *::after {
+  transition:
+    background-color 0.25s ease,
+    border-color 0.25s ease,
+    color 0.25s ease,
+    fill 0.25s ease,
+    stroke 0.25s ease !important;
 }

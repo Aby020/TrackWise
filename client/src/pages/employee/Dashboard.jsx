@@ -1,22 +1,29 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import {
+  Activity,
   ArrowRight,
   CalendarDays,
   CheckCircle2,
   Clock,
   Coffee,
+  CupSoda,
   History,
   LogIn,
+  MoonStar,
+  PauseCircle,
   Play,
   Square,
   Timer,
+  UserCheck,
+  Wifi,
 } from "lucide-react";
 import { toast } from "react-toastify";
 import { Button } from "../../components/ui/Button";
 import { Card } from "../../components/ui/Card";
 import { EmptyState } from "../../components/ui/EmptyState";
 import { ErrorState } from "../../components/ui/ErrorState";
+import { Menu, MenuItem, MenuLabel } from "../../components/ui/Menu";
 import { Skeleton } from "../../components/ui/Skeleton";
 import { StatCard } from "../../components/ui/StatCard";
 import { StatusBadge } from "../../components/ui/StatusBadge";
@@ -25,12 +32,17 @@ import { RadialGauge } from "../../components/charts/RadialGauge";
 import { useAuth } from "../../context/AuthContext";
 import { useNotifications } from "../../context/NotificationContext";
 import {
+  endBreak,
   endWork,
   getAttendanceHistory,
   getTodayAttendance,
+  startBreak,
   startWork,
 } from "../../services/attendance";
+import { getActiveShift } from "../../services/shift";
 import {
+  formatBreakElapsed,
+  formatClock,
   formatDateDay,
   formatDateLong,
   formatDateShort,
@@ -43,6 +55,27 @@ import {
 import { cn } from "../../lib/utils";
 
 const OFFICE_TARGET_HOURS = 8;
+
+const BREAK_OPTIONS = [
+  {
+    type: "lunch",
+    label: "Lunch",
+    hint: "Midday meal break",
+    icon: CupSoda,
+  },
+  {
+    type: "tea",
+    label: "Tea / Coffee",
+    hint: "Short refresh pause",
+    icon: Coffee,
+  },
+  {
+    type: "personal_gap",
+    label: "Personal Gap",
+    hint: "Personal time away",
+    icon: MoonStar,
+  },
+];
 
 /** Re-render on an interval; used for the live clock and elapsed hours. */
 function useNow(intervalMs = 30000) {
@@ -68,7 +101,7 @@ function dayKey(value) {
 function LiveClock() {
   const now = useNow(1000);
   return (
-    <div className="inline-flex items-center gap-2.5 rounded-full border border-line bg-surface px-4 py-2 shadow-sm">
+    <div className="inline-flex items-center gap-2.5 rounded-full border border-line bg-surface px-4 py-2 shadow-card">
       <Clock className="h-4 w-4 text-primary" aria-hidden="true" />
       <time
         className="text-sm font-semibold tabular text-ink"
@@ -87,6 +120,31 @@ function LiveClock() {
   );
 }
 
+/** Countdown to the moment the shift window opens. */
+function ShiftCountdown({ minutes }) {
+  const hours = Math.floor(minutes / 60);
+  const mins = minutes % 60;
+  const seconds = Math.floor((minutes % 1) * 60);
+  return (
+    <span className="inline-flex items-baseline gap-1.5 tabular">
+      {hours > 0 && (
+        <>
+          <span className="text-lg font-bold text-ink">{hours}</span>
+          <span className="text-[11px] font-medium text-muted">h</span>
+        </>
+      )}
+      <span className="text-lg font-bold text-ink">
+        {String(mins).padStart(2, "0")}
+      </span>
+      <span className="text-[11px] font-medium text-muted">m</span>
+      <span className="text-lg font-bold text-ink">
+        {String(seconds).padStart(2, "0")}
+      </span>
+      <span className="text-[11px] font-medium text-muted">s</span>
+    </span>
+  );
+}
+
 function Dashboard() {
   const { user } = useAuth();
   const { addNotification } = useNotifications();
@@ -99,20 +157,38 @@ function Dashboard() {
     breakHours: 0,
   });
   const [history, setHistory] = useState([]);
+  const [shift, setShift] = useState(null);
+  const [shiftError, setShiftError] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [busy, setBusy] = useState(null); // "start" | "end"
+  const [busyAction, setBusyAction] = useState(null);
 
   const load = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const [t, h] = await Promise.all([
+      const [t, h, s] = await Promise.allSettled([
         getTodayAttendance(),
         getAttendanceHistory(),
+        getActiveShift(),
       ]);
-      setToday((prev) => t.data ?? prev);
-      setHistory(Array.isArray(h.data) ? h.data : []);
+      setToday((prev) =>
+        t.status === "fulfilled" ? t.value.data ?? prev : prev,
+      );
+      setHistory(
+        h.status === "fulfilled" && Array.isArray(h.value.data)
+          ? h.value.data
+          : [],
+      );
+      if (s.status === "fulfilled") {
+        setShift(s.value.data ?? null);
+        setShiftError(null);
+      } else {
+        setShift(null);
+        setShiftError(
+          s.reason?.response?.data?.message || "Shift policy unavailable.",
+        );
+      }
     } catch (err) {
       setError(err);
     } finally {
@@ -124,11 +200,42 @@ function Dashboard() {
     load();
   }, [load]);
 
-  const handleStart = async () => {
-    setBusy("start");
+  const handleBreakStart = async (breakType) => {
+    setBusyAction("break");
+    try {
+      const res = await startBreak(breakType);
+      toast.success(res.message || "Break started.");
+      addNotification({
+        type: "info",
+        title: "Break started",
+        body: "Enjoy your pause — your session stays active.",
+      });
+      await load();
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Unable to start break.");
+    } finally {
+      setBusyAction(null);
+    }
+  };
+
+  const handleBreakEnd = async () => {
+    setBusyAction("resume");
+    try {
+      const res = await endBreak();
+      toast.success(res.message || "Welcome back.");
+      await load();
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Unable to resume work.");
+    } finally {
+      setBusyAction(null);
+    }
+  };
+
+  const handleStartWork = async () => {
+    setBusyAction("start");
     try {
       const res = await startWork();
-      toast.success(res.message || "Work started successfully!");
+      toast.success(res.message || "Work started successfully.");
       addNotification({
         type: "success",
         title: "Work started",
@@ -138,15 +245,15 @@ function Dashboard() {
     } catch (err) {
       toast.error(err.response?.data?.message || "Unable to start work.");
     } finally {
-      setBusy(null);
+      setBusyAction(null);
     }
   };
 
-  const handleEnd = async () => {
-    setBusy("end");
+  const handleEndWork = async () => {
+    setBusyAction("end");
     try {
       const res = await endWork();
-      toast.success(res.message || "Work ended successfully!");
+      toast.success(res.message || "Work ended successfully.");
       addNotification({
         type: "success",
         title: "Work ended",
@@ -156,17 +263,16 @@ function Dashboard() {
     } catch (err) {
       toast.error(err.response?.data?.message || "Unable to end work.");
     } finally {
-      setBusy(null);
+      setBusyAction(null);
     }
   };
 
-  const now = useNow(30000);
+  const now = useNow(15000);
   const status = today.status ?? "Offline";
   const isWorking = status === "working";
+  const isOnBreak = status === "on_break";
   const isComplete = Boolean(today.checkOut);
   const hours = toHours(today.totalHours);
-  // While clocked in the backend only records total_hours on check-out, so
-  // surface live elapsed time derived from check_in instead.
   const elapsed =
     today.checkIn && isWorking
       ? Math.max(0, (now.getTime() - new Date(today.checkIn).getTime()) / 3.6e6)
@@ -185,6 +291,30 @@ function Dashboard() {
     today.breakHours != null && Number(today.breakHours) > 0
       ? formatHours(today.breakHours)
       : "--";
+
+  const shiftStart = useMemo(() => {
+    if (!shift?.startTime) return null;
+    const [h, m] = shift.startTime.split(":").map(Number);
+    return h * 60 + (m || 0);
+  }, [shift]);
+
+  const currentMinutes = now.getHours() * 60 + now.getMinutes();
+  const graceMinutes = Number(shift?.earlyCheckinGraceMinutes ?? 0);
+  const earliestMinutes = shiftStart === null ? null : shiftStart - graceMinutes;
+  const beforeWindow =
+    earliestMinutes !== null && currentMinutes < earliestMinutes;
+  const windowOpen =
+    earliestMinutes !== null &&
+    currentMinutes >= earliestMinutes &&
+    (shift?.endTime
+      ? currentMinutes <
+        Number(shift.endTime.split(":")[0]) * 60 +
+          Number(shift.endTime.split(":")[1])
+      : true);
+  const minutesToOpen =
+    beforeWindow && earliestMinutes !== null
+      ? (earliestMinutes - currentMinutes) / 60
+      : 0;
 
   const week = useMemo(() => {
     const slots = [];
@@ -214,11 +344,15 @@ function Dashboard() {
 
   const firstName = fullName(user.firstName, user.lastName, user.employeeId);
 
-  const statusBlurb = isWorking
-    ? "You're clocked in. Remember to end your day before leaving."
-    : isComplete
-      ? "You've wrapped up for the day. Great work!"
-      : "You haven't clocked in yet. Office hours run 9:00 AM – 5:00 PM.";
+  const statusBlurb = isOnBreak
+    ? "You're on a break. Resume when you're ready to continue."
+    : isWorking
+      ? "You're clocked in. Remember to end your day before leaving."
+      : isComplete
+        ? "You've wrapped up for the day. Great work!"
+        : beforeWindow
+          ? "The shift window hasn't opened yet. Start work becomes available shortly."
+          : "You haven't clocked in yet. Start work when you're ready.";
 
   if (loading) {
     return (
@@ -267,6 +401,77 @@ function Dashboard() {
         <LiveClock />
       </header>
 
+      <Card className="p-5">
+        <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+          <div className="flex items-start gap-4">
+            <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-primary-soft text-primary shadow-sm">
+              <Clock className="h-5 w-5" aria-hidden="true" />
+            </span>
+            <div>
+              <p className="text-[13px] font-medium text-muted">
+                Shift schedule
+              </p>
+              <p className="mt-0.5 font-display text-lg font-bold tracking-tight text-ink">
+                {shift?.shiftName ?? "General Shift"}:{" "}
+                {shift
+                  ? `${formatClock(shift.startTime)} – ${formatClock(shift.endTime)}`
+                  : "08:30 AM – 05:00 PM"}
+              </p>
+              <p className="mt-1 text-xs text-muted">
+                {shiftError && !shift
+                  ? shiftError
+                  : `Check-in opens ${graceMinutes} min early · Strict enforcement ${
+                      shift?.isStrictEnforced ? "enabled" : "relaxed"
+                    }`}
+              </p>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-3">
+            <span className="inline-flex items-center gap-2 rounded-full border border-line bg-surface-raised px-3.5 py-1.5 text-xs font-medium text-ink-soft shadow-sm">
+              <Wifi className="h-3.5 w-3.5 text-success" aria-hidden="true" />
+              Presence Monitored: Active
+            </span>
+            <span
+              className={cn(
+                "inline-flex items-center gap-2 rounded-full px-3.5 py-1.5 text-xs font-semibold shadow-sm",
+                beforeWindow
+                  ? "border border-warning/30 bg-warning-soft text-warning"
+                  : windowOpen
+                    ? "border border-success/30 bg-success-soft text-success"
+                    : "border border-line bg-surface-raised text-muted",
+              )}
+            >
+              <span
+                className={cn(
+                  "h-1.5 w-1.5 rounded-full",
+                  beforeWindow
+                    ? "bg-warning"
+                    : windowOpen
+                      ? "bg-success"
+                      : "bg-faint",
+                )}
+                aria-hidden="true"
+              />
+              {beforeWindow
+                ? "Shift locked"
+                : windowOpen
+                  ? "Shift open"
+                  : "Shift ended"}
+            </span>
+            {beforeWindow && (
+              <div className="flex items-center gap-2 rounded-full border border-line bg-surface-raised px-3.5 py-1.5 shadow-sm">
+                <Timer className="h-3.5 w-3.5 text-primary" aria-hidden="true" />
+                <span className="text-xs font-medium text-muted">
+                  Starts in
+                </span>
+                <ShiftCountdown minutes={minutesToOpen} />
+              </div>
+            )}
+          </div>
+        </div>
+      </Card>
+
       <section
         className="grid grid-cols-2 gap-4 xl:grid-cols-4"
         aria-label="Today's summary"
@@ -274,8 +479,8 @@ function Dashboard() {
         <StatCard
           label="Current status"
           value={<StatusBadge status={status} />}
-          icon={Clock}
-          tone={isWorking ? "success" : "neutral"}
+          icon={isOnBreak ? PauseCircle : Clock}
+          tone={isWorking ? "success" : isOnBreak ? "warning" : "neutral"}
         />
         <StatCard
           label="Check in"
@@ -284,7 +489,7 @@ function Dashboard() {
           hint={today.checkIn ? "Clock in time today" : "Not checked in yet"}
         />
         <StatCard
-          label="Working hours"
+          label="Net productive hours"
           value={hoursLabel}
           icon={Timer}
           hint={
@@ -294,23 +499,30 @@ function Dashboard() {
           }
         />
         <StatCard
-          label="Break"
+          label="Break hours"
           value={breakLabel}
           icon={Coffee}
-          hint={isWorking ? "Taking a pause counts here" : undefined}
+          hint={isOnBreak ? "Break timer is running" : "Pause time counts here"}
         />
       </section>
 
       <section className="grid gap-6 lg:grid-cols-3" aria-label="Day progress">
         <Card className="flex flex-col items-center p-6 text-center lg:col-span-1">
           <div className="flex w-full items-center justify-between">
-            <h2 className="text-sm font-semibold text-ink">Today</h2>
+            <h2 className="text-sm font-semibold text-ink">Work center</h2>
             <StatusBadge status={status} />
           </div>
 
           <RadialGauge
             value={gauge}
             size={186}
+            color={
+              isOnBreak
+                ? "var(--color-warning)"
+                : isWorking
+                  ? "var(--color-primary)"
+                  : "var(--color-line-strong)"
+            }
             label={`${displayHours.toFixed(1)} of ${OFFICE_TARGET_HOURS} hours worked today`}
             className="mt-6"
           >
@@ -339,13 +551,24 @@ function Dashboard() {
               >
                 Work completed
               </Button>
+            ) : isOnBreak ? (
+              <Button
+                variant="primary"
+                size="lg"
+                className="w-full"
+                onClick={handleBreakEnd}
+                loading={busyAction === "resume"}
+                leftIcon={Play}
+              >
+                Resume work
+              </Button>
             ) : isWorking ? (
               <Button
                 variant="outline"
                 size="lg"
                 className="w-full"
-                onClick={handleEnd}
-                loading={busy === "end"}
+                onClick={handleEndWork}
+                loading={busyAction === "end"}
                 leftIcon={Square}
               >
                 End work
@@ -355,14 +578,58 @@ function Dashboard() {
                 variant="primary"
                 size="lg"
                 className="w-full"
-                onClick={handleStart}
-                loading={busy === "start"}
+                onClick={handleStartWork}
+                loading={busyAction === "start"}
+                disabled={beforeWindow}
                 leftIcon={Play}
               >
-                Start work
+                {beforeWindow ? "Start work (locked)" : "Start work"}
               </Button>
             )}
           </div>
+
+          {isWorking && (
+            <div className="mt-3 w-full">
+              <Menu
+                trigger={
+                  <Button
+                    variant="secondary"
+                    size="lg"
+                    className="w-full"
+                    loading={busyAction === "break"}
+                    leftIcon={Coffee}
+                    rightIcon={ArrowRight}
+                  >
+                    Take a break
+                  </Button>
+                }
+              >
+                <MenuLabel>Choose a pause type</MenuLabel>
+                {BREAK_OPTIONS.map((option) => (
+                  <MenuItem
+                    key={option.type}
+                    icon={option.icon}
+                    label={option.label}
+                    onSelect={() => handleBreakStart(option.type)}
+                  />
+                ))}
+              </Menu>
+            </div>
+          )}
+
+          {isOnBreak && (
+            <div className="mt-3 w-full animate-pulse-soft rounded-xl border border-warning/25 bg-warning-soft px-4 py-3">
+              <div className="flex items-center justify-between">
+                <span className="inline-flex items-center gap-2 text-xs font-semibold text-warning">
+                  <PauseCircle className="h-4 w-4" aria-hidden="true" />
+                  On break
+                </span>
+                <span className="text-sm font-bold tabular text-warning">
+                  {formatBreakElapsed(today, now)}
+                </span>
+              </div>
+            </div>
+          )}
 
           <dl className="mt-6 grid w-full grid-cols-2 gap-3 border-t border-line pt-4">
             <div className="text-left">
@@ -416,8 +683,8 @@ function Dashboard() {
               action={
                 <Button
                   size="sm"
-                  onClick={handleStart}
-                  loading={busy === "start"}
+                  onClick={handleStartWork}
+                  loading={busyAction === "start"}
                   leftIcon={Play}
                 >
                   Start work
@@ -425,6 +692,46 @@ function Dashboard() {
               }
             />
           )}
+
+          <div className="mt-6 grid gap-3 border-t border-line pt-5 sm:grid-cols-2">
+            <div className="flex items-center gap-3 rounded-xl border border-line bg-surface-raised p-3.5">
+              <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-success-soft text-success">
+                <Activity className="h-4.5 w-4.5" aria-hidden="true" />
+              </span>
+              <div className="min-w-0">
+                <p className="text-xs font-medium text-muted">
+                  Net productive hours
+                </p>
+                <p className="mt-0.5 text-lg font-bold tabular tracking-tight text-ink">
+                  {displayHours > 0 ? displayHours.toFixed(1) : "0.0"}{" "}
+                  <span className="text-xs font-medium text-muted">hrs</span>
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-3 rounded-xl border border-line bg-surface-raised p-3.5">
+              <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-warning-soft text-warning">
+                <Coffee className="h-4.5 w-4.5" aria-hidden="true" />
+              </span>
+              <div className="min-w-0">
+                <p className="text-xs font-medium text-muted">Break hours</p>
+                <p className="mt-0.5 text-lg font-bold tabular tracking-tight text-ink">
+                  {Number(today.breakHours || 0) > 0
+                    ? toHours(today.breakHours).toFixed(1)
+                    : "0.0"}{" "}
+                  <span className="text-xs font-medium text-muted">hrs</span>
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-4 flex items-center gap-2 rounded-lg bg-primary-soft px-3.5 py-2.5 text-xs font-medium text-ink-soft">
+            <UserCheck className="h-4 w-4 shrink-0 text-primary" aria-hidden="true" />
+            Proof-of-presence heartbeat is running in this tab — the session
+            pauses when the tab closes.
+            <span className="ml-auto hidden shrink-0 rounded-full bg-surface px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-primary sm:inline">
+              Live
+            </span>
+          </div>
         </Card>
       </section>
 
@@ -458,8 +765,8 @@ function Dashboard() {
             action={
               <Button
                 size="sm"
-                onClick={handleStart}
-                loading={busy === "start"}
+                onClick={handleStartWork}
+                loading={busyAction === "start"}
                 leftIcon={Play}
               >
                 Start work

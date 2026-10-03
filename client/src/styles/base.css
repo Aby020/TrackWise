@@ -54,6 +54,11 @@
     color: var(--color-primary-strong);
   }
 
+  /* Dark theme surfaces inherit the raised token instead of white */
+  [data-theme="dark"] ::selection {
+    color: var(--color-canvas);
+  }
+
   /* Visible keyboard focus — never removed */
   :focus-visible {
     outline: 2px solid var(--color-primary);
@@ -67,13 +72,13 @@
     height: 10px;
   }
   ::-webkit-scrollbar-thumb {
-    background: rgb(100 116 139 / 0.28);
+    background: var(--tw-line-strong);
     border-radius: 999px;
     border: 2px solid transparent;
     background-clip: content-box;
   }
   ::-webkit-scrollbar-thumb:hover {
-    background: rgb(100 116 139 / 0.45);
+    background: var(--tw-muted);
     border: 2px solid transparent;
     background-clip: content-box;
   }
@@ -103,7 +108,7 @@
 .skeleton {
   position: relative;
   overflow: hidden;
-  background-color: #e8ecf3;
+  background-color: var(--color-line);
   border-radius: 8px;
 }
 .skeleton::after {
@@ -113,7 +118,7 @@
   background: linear-gradient(
     90deg,
     transparent,
-    rgb(255 255 255 / 0.65),
+    var(--color-surface-raised),
     transparent
   );
   background-size: 400px 100%;

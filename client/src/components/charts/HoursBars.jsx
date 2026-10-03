@@ -2,9 +2,9 @@ import { cn } from "../../lib/utils";
 
 /**
  * Vertical bar chart for daily hours.
- * Each entry renders a rounded bar; today is highlighted with a
- * primary → violet gradient. Bars expose their value as an accessible
- * image label, and the chart reads as an image with a summary label.
+ * Each entry renders a rounded bar; today is highlighted in solid
+ * primary. Bars expose their value as an accessible image label,
+ * and the chart reads as an image with a summary label.
  */
 export function HoursBars({
   data = [],
@@ -53,9 +53,9 @@ export function HoursBars({
                 className={cn(
                   "w-full max-w-9 rounded-t-md transition-[height] duration-500 ease-out motion-reduce:transition-none",
                   today
-                    ? "bg-gradient-to-t from-primary to-violet shadow-sm shadow-primary/25"
+                    ? "bg-primary"
                     : value > 0
-                      ? "bg-primary/15 group-hover:bg-primary/35"
+                      ? "bg-primary/20 group-hover:bg-primary/40"
                       : "bg-line",
                 )}
                 style={{ height: barHeight }}

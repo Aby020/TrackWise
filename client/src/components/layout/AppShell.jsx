@@ -3,10 +3,12 @@ import { Sidebar } from "./Sidebar";
 import { MobileDrawer } from "./MobileDrawer";
 import { Topbar } from "./Topbar";
 import { PageTransition } from "./PageTransition";
+import { ErrorBoundary } from "../ui/ErrorBoundary";
 
 /**
- * Authenticated app shell: fixed dark-glass sidebar, sticky topbar, and a
+ * Authenticated app shell: fixed dark sidebar, sticky topbar, and a
  * max-width content canvas with route-change entrance animation.
+ * The page subtree is isolated so a failing view never whites out.
  */
 export function AppShell({ children }) {
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -21,7 +23,9 @@ export function AppShell({ children }) {
           id="main-content"
           className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8 lg:py-8"
         >
-          <PageTransition>{children}</PageTransition>
+          <PageTransition>
+            <ErrorBoundary>{children}</ErrorBoundary>
+          </PageTransition>
         </main>
       </div>
     </div>

@@ -87,6 +87,32 @@ export function toHours(value) {
   return Number.isNaN(n) ? 0 : n;
 }
 
+/** "08:30:00" → "08:30 AM" for shift banner labels. */
+export function formatClock(value) {
+  if (typeof value !== "string") return "--";
+  const parts = value.trim().split(":");
+  const hours = Number(parts[0]);
+  const minutes = Number(parts[1] ?? 0);
+  if (Number.isNaN(hours) || Number.isNaN(minutes)) return "--";
+  const period = hours >= 12 ? "PM" : "AM";
+  const displayHours = hours % 12 === 0 ? 12 : hours % 12;
+  return `${displayHours}:${String(minutes).padStart(2, "0")} ${period}`;
+}
+
+/** Elapsed break time as "1h 24m" from an active break start timestamp. */
+export function formatBreakElapsed(record, now = new Date()) {
+  const started = record?.activeBreakStartedAt;
+  if (!started) return "0m";
+  const diff = Math.max(
+    0,
+    (now.getTime() - new Date(started).getTime()) / 60000,
+  );
+  const hours = Math.floor(diff / 60);
+  const minutes = Math.floor(diff % 60);
+  if (hours === 0) return `${minutes}m`;
+  return `${hours}h ${String(minutes).padStart(2, "0")}m`;
+}
+
 /** "2026-08" — stable month key used for filtering / grouping. */
 export function monthKey(value) {
   const d = toDate(value) ?? new Date();

@@ -27,7 +27,7 @@ function NavItem({ item, onNavigate }) {
     >
       {active && (
         <span
-          className="absolute left-0 top-1/2 h-5 w-0.5 -translate-y-1/2 rounded-full bg-gradient-to-b from-secondary to-violet shadow-[0_0_8px_rgba(99,102,241,0.9)]"
+          className="absolute left-0 top-1/2 h-5 w-0.5 -translate-y-1/2 rounded-full bg-secondary"
           aria-hidden="true"
         />
       )}
@@ -98,24 +98,17 @@ export function SidebarContent({ onNavigate }) {
 }
 
 /**
- * Dark glass shell wrapper — ambient indigo/violet glow + frosted blur.
+ * Dark shell wrapper — solid dark surface, no ambient glow.
  * Shared by the fixed desktop sidebar and the mobile drawer.
  */
 export function SidebarGlass({ children, className }) {
   return (
     <div
       className={cn(
-        "dark-shell relative flex h-full flex-col overflow-hidden border-r border-white/10 bg-sidebar/95 backdrop-blur-xl",
+        "dark-shell relative flex h-full flex-col overflow-hidden border-r border-white/10 bg-sidebar",
         className,
       )}
     >
-      <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
-        <div className="absolute -right-16 -top-24 h-56 w-56 rounded-full bg-secondary/25 blur-3xl animate-glow-drift" />
-        <div
-          className="absolute -bottom-28 -left-10 h-64 w-64 rounded-full bg-violet/20 blur-3xl animate-glow-drift"
-          style={{ animationDelay: "-5s" }}
-        />
-      </div>
       {children}
     </div>
   );

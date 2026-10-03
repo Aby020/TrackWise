@@ -1,6 +1,7 @@
 import { useLocation } from "react-router-dom";
-import { Menu } from "lucide-react";
+import { Menu, Moon, Sun } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
+import { useTheme } from "../../context/ThemeContext";
 import { titleForPath } from "../../lib/nav";
 import { formatDateLong } from "../../lib/format";
 import { IconButton } from "../ui/IconButton";
@@ -10,8 +11,10 @@ import { UserMenu } from "./UserMenu";
 
 export function Topbar({ onMenuClick }) {
   const { user } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const location = useLocation();
   const title = titleForPath(location.pathname, user?.role);
+  const isDark = theme === "dark";
 
   return (
     <header className="sticky top-0 z-30 border-b border-line/70 bg-canvas/85 backdrop-blur-md">
@@ -30,6 +33,11 @@ export function Topbar({ onMenuClick }) {
             {formatDateLong()}
           </p>
         </div>
+        <IconButton
+          label={isDark ? "Switch to light mode" : "Switch to dark mode"}
+          icon={isDark ? Sun : Moon}
+          onClick={toggleTheme}
+        />
         <CommandPalette />
         <NotificationBell />
         <UserMenu />
