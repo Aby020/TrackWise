@@ -53,7 +53,7 @@ export const modernSchemaName = "modern";
 export const adminSeedDefaults = {
     employeeId: process.env.ADMIN_EMPLOYEE_ID ?? "ADMIN001",
     email: process.env.ADMIN_EMAIL ?? "admin@trackwise.app",
-    password: process.env.ADMIN_PASSWORD ?? "TrackwiseDev2026",
+    password: process.env.ADMIN_PASSWORD ?? "",
     firstName: "Admin",
     lastName: "User",
 } as const;
@@ -65,4 +65,19 @@ export const shiftSeedDefaults = {
     earlyCheckinGraceMinutes: 15,
 } as const;
 
-export const jwtSecret = process.env.JWT_SECRET ?? "";
+const MIN_JWT_SECRET_LENGTH = 32;
+
+const resolveJwtSecret = (): string => {
+    const secret = process.env.JWT_SECRET;
+
+    if (!secret || secret.length < MIN_JWT_SECRET_LENGTH) {
+        throw new Error(
+            `JWT_SECRET must be set and at least ${MIN_JWT_SECRET_LENGTH} characters long. ` +
+                "Generate one with: openssl rand -base64 48",
+        );
+    }
+
+    return secret;
+};
+
+export const jwtSecret: string = resolveJwtSecret();

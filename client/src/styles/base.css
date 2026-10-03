@@ -95,6 +95,108 @@
 }
 
 /* ------------------------------------------------------------------ */
+/* Landing atmosphere                                                  */
+/* ------------------------------------------------------------------ */
+
+/* Enterprise obsidian canvas — indigo core glow, cool ambient wash */
+.hero-atmosphere {
+  background-color: var(--tw-canvas);
+  background-image:
+    radial-gradient(500px 480px at 16% 6%, rgb(79 70 229 / 0.12), transparent 68%),
+    radial-gradient(420px 420px at 90% 34%, rgb(16 185 129 / 0.08), transparent 68%),
+    radial-gradient(900px 520px at 62% -8%, rgb(34 211 238 / 0.06), transparent 70%);
+}
+
+/* Top-center ambient light — indigo core falling off into sky */
+.hero-glow {
+  position: absolute;
+  top: -10%;
+  left: 50%;
+  width: 800px;
+  height: 400px;
+  transform: translateX(-50%);
+  border-radius: 9999px;
+  pointer-events: none;
+  background-image: linear-gradient(
+    to bottom,
+    rgb(79 70 229 / 0.2),
+    rgb(14 165 233 / 0.1),
+    transparent
+  );
+  filter: blur(120px);
+}
+
+/* Subtle engineering grid — visible near the center, fading outward */
+.hero-grid {
+  background-image:
+    linear-gradient(to right, rgb(148 163 184 / 0.07) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(148 163 184 / 0.07) 1px, transparent 1px);
+  background-size: 56px 56px;
+  -webkit-mask-image: radial-gradient(
+    80% 70% at 50% 12%,
+    black 28%,
+    transparent 100%
+  );
+  mask-image: radial-gradient(
+    80% 70% at 50% 12%,
+    black 28%,
+    transparent 100%
+  );
+}
+
+/* Dual-tone headline — crisp white lead clipped to the text */
+.headline-gradient {
+  color: rgb(255 255 255);
+}
+
+/* Accent phrase — indigo → sky → emerald, clipped to text */
+.phrase-gradient {
+  background-image: linear-gradient(
+    to right,
+    rgb(129 140 248),
+    rgb(125 211 252),
+    rgb(52 211 153)
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Accent phrase gradient */
+.phrase-gradient {
+  background-image: linear-gradient(
+    to right,
+    rgb(129 140 248),
+    rgb(125 211 252),
+    rgb(52 211 153)
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* ------------------------------------------------------------------ */
+/* Auth atmosphere — deep obsidian canvas with indigo/cyan mesh        */
+/* ------------------------------------------------------------------ */
+.auth-atmosphere {
+  background-color: #090d16;
+  background-image:
+    radial-gradient(620px 460px at 18% 8%, rgb(79 70 229 / 0.16), transparent 68%),
+    radial-gradient(520px 420px at 88% 22%, rgb(34 211 238 / 0.1), transparent 70%),
+    radial-gradient(900px 520px at 60% 108%, rgb(124 58 237 / 0.12), transparent 72%);
+}
+
+/* Faint engineering grid, fading out toward the edges */
+.auth-grid {
+  background-image:
+    linear-gradient(to right, rgb(148 163 184 / 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(148 163 184 / 0.05) 1px, transparent 1px);
+  background-size: 56px 56px;
+  -webkit-mask-image: radial-gradient(75% 65% at 50% 40%, black 22%, transparent 100%);
+  mask-image: radial-gradient(75% 65% at 50% 40%, black 22%, transparent 100%);
+}
+
+/* ------------------------------------------------------------------ */
 /* Utilities (small, reusable)                                         */
 /* ------------------------------------------------------------------ */
 @utility tabular {

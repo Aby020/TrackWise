@@ -3,7 +3,6 @@ import {
     boolean,
     index,
     integer,
-    jsonb,
     pgSchema,
     serial,
     time,
@@ -105,23 +104,6 @@ export const companyShifts = modernSchema.table(
     ],
 );
 
-export const userBiometrics = modernSchema.table(
-    "user_biometrics",
-    {
-        id: serial("id").primaryKey(),
-        userId: uuid("user_id")
-            .notNull()
-            .references(() => users.id, { onDelete: "cascade" }),
-        faceDescriptor: jsonb("face_descriptor")
-            .$type<readonly number[]>()
-            .notNull(),
-        enrolledAt: timestamp("enrolled_at", { withTimezone: true })
-            .notNull()
-            .defaultNow(),
-    },
-    (table) => [index("user_biometrics_user_id_idx").on(table.userId)],
-);
-
 export const attendanceRecords = modernSchema.table(
     "attendance_records",
     {
@@ -198,21 +180,10 @@ export const faceVerificationLogs = modernSchema.table(
 );
 
 export const usersRelations = relations(users, ({ many }) => ({
-    biometrics: many(userBiometrics),
     attendanceRecords: many(attendanceRecords),
     breaks: many(attendanceBreaks),
     faceVerificationLogs: many(faceVerificationLogs),
 }));
-
-export const userBiometricsRelations = relations(
-    userBiometrics,
-    ({ one }) => ({
-        user: one(users, {
-            fields: [userBiometrics.userId],
-            references: [users.id],
-        }),
-    }),
-);
 
 export const attendanceRecordsRelations = relations(
     attendanceRecords,
@@ -258,8 +229,6 @@ export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
 export type CompanyShift = typeof companyShifts.$inferSelect;
 export type NewCompanyShift = typeof companyShifts.$inferInsert;
-export type UserBiometric = typeof userBiometrics.$inferSelect;
-export type NewUserBiometric = typeof userBiometrics.$inferInsert;
 export type AttendanceRecord = typeof attendanceRecords.$inferSelect;
 export type NewAttendanceRecord = typeof attendanceRecords.$inferInsert;
 export type AttendanceBreak = typeof attendanceBreaks.$inferSelect;

@@ -29,12 +29,7 @@ function MarketingShell({ children }) {
 }
 
 function AuthShell({ children }) {
-  return (
-    <div className="min-h-screen bg-canvas">
-      <GlobalHeader />
-      {children}
-    </div>
-  );
+  return <>{children}</>;
 }
 
 function EmployeeShell({ children }) {

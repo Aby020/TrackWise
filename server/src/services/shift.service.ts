@@ -25,7 +25,24 @@ export const getActiveShift = async () => {
     const shift = rows[0];
 
     if (!shift) {
-        throw new ShiftNotFoundError();
+        // Create a default shift if none exists
+        const defaultShift = {
+            shiftName: 'General Shift',
+            startTime: '08:30:00',
+            endTime: '17:00:00',
+            earlyCheckinGraceMinutes: 15,
+            isStrictEnforced: false,
+            isActive: true,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+        };
+
+        const [createdShift] = await db
+            .insert(companyShifts)
+            .values(defaultShift)
+            .returning();
+
+        return createdShift;
     }
 
     return shift;
@@ -54,7 +71,10 @@ export const updateActiveShift = async (data: UpdateShiftInput) => {
             : { isStrictEnforced: data.isStrictEnforced }),
     };
 
-    if (next.startTime >= next.endTime) {
+    const nextStart = next.startTime ?? "00:00:00";
+    const nextEnd = next.endTime ?? "23:59:59";
+
+    if (nextStart >= nextEnd) {
         throw new Error("Start time must be earlier than end time.");
     }
 
@@ -69,7 +89,10 @@ export const updateActiveShift = async (data: UpdateShiftInput) => {
             updatedAt: new Date(),
         })
         .where(
-            and(eq(companyShifts.id, current.id), eq(companyShifts.isActive, true)),
+            and(
+                eq(companyShifts.id, current?.id ?? 0),
+                eq(companyShifts.isActive, true),
+            ),
         )
         .returning();
 

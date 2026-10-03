@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import {
   CalendarRange,
   Clock3,
@@ -17,6 +17,7 @@ import { Skeleton } from "../../components/ui/Skeleton";
 import { StatusBadge } from "../../components/ui/StatusBadge";
 import { Table, TBody, Td, Th, THead, Tr } from "../../components/ui/Table";
 import { getAttendanceHistory } from "../../services/attendance";
+import { isDemoLocation } from "../../hooks/useDemoMode";
 import {
   formatDateFull,
   formatHours,
@@ -55,6 +56,8 @@ function InProgressDot() {
 
 function AttendanceHistory() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const isDemo = isDemoLocation(location);
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -63,6 +66,15 @@ function AttendanceHistory() {
   const load = useCallback(async () => {
     setLoading(true);
     setError(null);
+
+    // Demo sessions have no server data — the history endpoint is
+    // protected and a 401 would bounce the demo to the login page.
+    if (isDemo) {
+      setHistory([]);
+      setLoading(false);
+      return;
+    }
+
     try {
       const res = await getAttendanceHistory();
       setHistory(Array.isArray(res.data) ? res.data : []);
@@ -71,7 +83,7 @@ function AttendanceHistory() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [isDemo]);
 
   useEffect(() => {
     load();

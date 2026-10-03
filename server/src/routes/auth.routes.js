@@ -6,6 +6,7 @@ const authController = require("../controllers/auth.controller");
 const validate = require("../middleware/validation.middleware");
 const {
     activateValidation,
+    loginIdentifierPresent,
     loginValidation,
 } = require("../validations/auth.validation");
 
@@ -18,6 +19,7 @@ router.post(
 
 router.post(
     "/login",
+    loginIdentifierPresent,
     loginValidation,
     validate,
     authController.login,

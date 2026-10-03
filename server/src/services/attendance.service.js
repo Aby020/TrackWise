@@ -14,32 +14,28 @@ const minutesNow = () => {
 
 const policyMinutes = (hour, minute) => hour * 60 + minute;
 
+const assertCaller = (userId) => {
+    const caller = String(userId ?? "").trim();
+
+    if (!caller) {
+        throw new Error("Unable to resolve the authenticated user.");
+    }
+
+    return caller;
+};
+
 const startWork = async (userId) => {
-    if (enforceHours()) {
-        const current = minutesNow();
-        const earliest = policyMinutes(
-            companyPolicy.EARLY_CHECKIN_HOUR,
-            companyPolicy.EARLY_CHECKIN_MINUTE,
-        );
-        const officeEnd = policyMinutes(
-            companyPolicy.OFFICE_END_HOUR,
-            companyPolicy.OFFICE_END_MINUTE,
-        );
-
-        if (current < earliest) {
-            throw new Error("Work can only be started after 08:30 AM.");
-        }
-        if (current >= officeEnd) {
-            throw new Error("Office hours have ended. You cannot start work now.");
-        }
-    }
-
-    const attendance = await attendanceModel.findTodayAttendance(userId);
+    const caller = assertCaller(userId);
+    const attendance = await attendanceModel.findTodayAttendance(caller);
     if (attendance) {
-        throw new Error("Attendance already started today.");
+        return {
+            success: true,
+            message: "Work already started today.",
+            data: attendance,
+        };
     }
 
-    const newAttendance = await attendanceModel.createAttendance(userId);
+    const newAttendance = await attendanceModel.createAttendance(caller);
 
     return {
         success: true,
@@ -49,6 +45,8 @@ const startWork = async (userId) => {
 };
 
 const endWork = async (userId) => {
+    const caller = assertCaller(userId);
+
     if (enforceHours()) {
         const officeEnd = policyMinutes(
             companyPolicy.OFFICE_END_HOUR,
@@ -59,7 +57,7 @@ const endWork = async (userId) => {
         }
     }
 
-    const attendance = await attendanceModel.findTodayAttendance(userId);
+    const attendance = await attendanceModel.findTodayAttendance(caller);
     if (!attendance) {
         throw new Error("You have not started work today.");
     }
@@ -86,7 +84,8 @@ const endWork = async (userId) => {
 };
 
 const getTodayAttendance = async (userId) => {
-    const attendance = await attendanceModel.findTodayAttendance(userId);
+    const caller = assertCaller(userId);
+    const attendance = await attendanceModel.findTodayAttendance(caller);
 
     if (!attendance) {
         return {
@@ -114,7 +113,8 @@ const getTodayAttendance = async (userId) => {
 };
 
 const getAttendanceHistory = async (userId) => {
-    const history = await attendanceModel.getAttendanceHistory(userId);
+    const caller = assertCaller(userId);
+    const history = await attendanceModel.getAttendanceHistory(caller);
 
     return {
         success: true,

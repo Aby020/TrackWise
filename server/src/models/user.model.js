@@ -59,6 +59,27 @@ const findByEmail = async (email) => {
     return result.rows[0];
 };
 
+/**
+ * Locate a login by its identifier, accepting either the employee id
+ * or the corporate email, case-insensitively. The login form only has
+ * one field, so users may type either — including mixed case such as
+ * "admin001" or "Admin@TrackWise.app".
+ */
+const findByLoginIdentifier = async (identifier) => {
+    const normalized = String(identifier ?? "").trim();
+
+    const result = await pool.query(
+        `SELECT * FROM users
+          WHERE LOWER(employee_id) = LOWER($1)
+             OR LOWER(email) = LOWER($1)
+          ORDER BY (LOWER(employee_id) = LOWER($1)) DESC
+          LIMIT 1`,
+        [normalized],
+    );
+
+    return result.rows[0];
+};
+
 const activateEmployee = async (employeeId, hashedPassword) => {
     const query = `
         UPDATE users
@@ -81,5 +102,6 @@ module.exports = {
     createEmployee,
     findByEmployeeId,
     findByEmail,
+    findByLoginIdentifier,
     activateEmployee,
 };

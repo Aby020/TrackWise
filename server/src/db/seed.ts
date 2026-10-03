@@ -89,8 +89,12 @@ const runSeed = async (): Promise<void> => {
         .where(eq(companyShifts.isActive, true));
 
     console.log("Seed complete.");
-    console.log(`  admin : ${JSON.stringify(seededUsers[0] ?? null)}`);
-    console.log(`  shift : ${JSON.stringify(seededShifts[0] ?? null)}`);
+    if (seededUsers[0]) {
+        console.log(`  admin seeded: ${seededUsers[0].employeeId}`);
+    }
+    if (seededShifts[0]) {
+        console.log(`  shift seeded: ${seededShifts[0].shiftName}`);
+    }
 };
 
 runSeed()

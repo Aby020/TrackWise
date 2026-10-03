@@ -3,13 +3,11 @@ const attendanceService = require("../services/attendance.service");
 const startWork = async (req, res) => {
   try {
     const result = await attendanceService.startWork(req.user.id);
-
-    res.status(201).json(result);
+    res.status(200).json(result);
   } catch (error) {
     res.status(400).json({
       success: false,
-
-      message: error.message,
+      message: error.message || 'Failed to start work'
     });
   }
 };

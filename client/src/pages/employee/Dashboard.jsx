@@ -1,7 +1,8 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import {
   Activity,
+  AlarmClock,
   ArrowRight,
   CalendarDays,
   CheckCircle2,
@@ -15,8 +16,6 @@ import {
   Play,
   Square,
   Timer,
-  UserCheck,
-  Wifi,
 } from "lucide-react";
 import { toast } from "react-toastify";
 import { Button } from "../../components/ui/Button";
@@ -24,13 +23,17 @@ import { Card } from "../../components/ui/Card";
 import { EmptyState } from "../../components/ui/EmptyState";
 import { ErrorState } from "../../components/ui/ErrorState";
 import { Menu, MenuItem, MenuLabel } from "../../components/ui/Menu";
+import { Modal } from "../../components/ui/Modal";
 import { Skeleton } from "../../components/ui/Skeleton";
 import { StatCard } from "../../components/ui/StatCard";
 import { StatusBadge } from "../../components/ui/StatusBadge";
+import { DemoBanner } from "../../components/demo/DemoBanner";
 import { HoursBars } from "../../components/charts/HoursBars";
 import { RadialGauge } from "../../components/charts/RadialGauge";
 import { useAuth } from "../../context/AuthContext";
 import { useNotifications } from "../../context/NotificationContext";
+import { useDemoMode } from "../../hooks/useDemoMode";
+import { playDeskCheckChime } from "../../hooks/useDemoMode";
 import {
   endBreak,
   endWork,
@@ -148,6 +151,7 @@ function ShiftCountdown({ minutes }) {
 function Dashboard() {
   const { user } = useAuth();
   const { addNotification } = useNotifications();
+  const demo = useDemoMode();
 
   const [today, setToday] = useState({
     status: "Offline",
@@ -163,9 +167,48 @@ function Dashboard() {
   const [error, setError] = useState(null);
   const [busyAction, setBusyAction] = useState(null);
 
+  const now = useNow(15000);
+  const status = demo.isDemo
+    ? demo.status
+    : today.status ?? "Offline";
+  const isWorking = status === "working";
+  const isOnBreak = status === "on_break";
+  const isComplete = demo.isDemo
+    ? status === "completed"
+    : Boolean(today.checkOut);
+  const hours = demo.isDemo
+    ? demo.workSeconds / 3600
+    : toHours(today.totalHours);
+  const elapsed = demo.isDemo
+    ? demo.workSeconds / 3600
+    : today.checkIn && isWorking
+      ? Math.max(0, (now.getTime() - new Date(today.checkIn).getTime()) / 3.6e6)
+      : 0;
+  const displayHours = isWorking ? elapsed : hours;
+  const gauge = displayHours / OFFICE_TARGET_HOURS;
+
   const load = useCallback(async () => {
     setLoading(true);
     setError(null);
+
+    // Demo mode renders the simulated state from useDemoMode — the
+    // real attendance endpoints are protected and would 401, which
+    // the api client turns into a session-expired redirect.
+    if (demo.isDemo) {
+      setToday({
+        status: "Offline",
+        checkIn: null,
+        checkOut: null,
+        totalHours: 0,
+        breakHours: 0,
+      });
+      setHistory([]);
+      setShift(null);
+      setShiftError(null);
+      setLoading(false);
+      return;
+    }
+
     try {
       const [t, h, s] = await Promise.allSettled([
         getTodayAttendance(),
@@ -194,7 +237,7 @@ function Dashboard() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [demo.isDemo]);
 
   useEffect(() => {
     load();
@@ -243,11 +286,39 @@ function Dashboard() {
       });
       await load();
     } catch (err) {
+      // Only a genuine auth failure belongs on the login page;
+      // everything else (including a 404 from a missing route)
+      // is an inline error so the user stays signed in.
       toast.error(err.response?.data?.message || "Unable to start work.");
     } finally {
       setBusyAction(null);
     }
   };
+
+  const [deskCheckOpen, setDeskCheckOpen] = useState(false);
+  const deskCheckTimer = useRef(null);
+
+  const clearDeskCheckTimer = useCallback(() => {
+    if (deskCheckTimer.current) {
+      window.clearInterval(deskCheckTimer.current);
+      deskCheckTimer.current = null;
+    }
+  }, []);
+
+  const resetDeskCheckTimer = useCallback(() => {
+    clearDeskCheckTimer();
+    if (isWorking) {
+      deskCheckTimer.current = window.setInterval(() => {
+        playDeskCheckChime();
+        setDeskCheckOpen(true);
+      }, 30 * 60 * 1000);
+    }
+  }, [isWorking, clearDeskCheckTimer]);
+
+  useEffect(() => {
+    resetDeskCheckTimer();
+    return clearDeskCheckTimer;
+  }, [resetDeskCheckTimer, clearDeskCheckTimer]);
 
   const handleEndWork = async () => {
     setBusyAction("end");
@@ -267,20 +338,38 @@ function Dashboard() {
     }
   };
 
-  const now = useNow(15000);
-  const status = today.status ?? "Offline";
-  const isWorking = status === "working";
-  const isOnBreak = status === "on_break";
-  const isComplete = Boolean(today.checkOut);
-  const hours = toHours(today.totalHours);
-  const elapsed =
-    today.checkIn && isWorking
-      ? Math.max(0, (now.getTime() - new Date(today.checkIn).getTime()) / 3.6e6)
-      : 0;
-  const displayHours = isWorking ? elapsed : hours;
-  const gauge = displayHours / OFFICE_TARGET_HOURS;
+  // In demo mode, intercept the standard controls so they manipulate
+  // the simulated state instead of making real API calls.
+  const dispatchBreakStart = demo.isDemo
+    ? (breakType) => {
+        demo.startBreak(breakType);
+        toast.success("Break started (simulated).");
+      }
+    : handleBreakStart;
+  const dispatchBreakEnd = demo.isDemo
+    ? () => {
+        demo.resumeWork();
+        toast.success("Work resumed (simulated).");
+      }
+    : handleBreakEnd;
+  const dispatchStartWork = demo.isDemo
+    ? () => {
+        demo.simulateStartWork();
+        toast.success("Work started (simulated).");
+      }
+    : handleStartWork;
+  const dispatchEndWork = demo.isDemo
+    ? () => {
+        demo.endWork();
+        toast.success("Work ended (simulated).");
+      }
+    : handleEndWork;
 
-  const checkInLabel = today.checkIn ? formatTime(today.checkIn) : "--";
+  const checkInLabel = demo.isDemo
+    ? formatTime(demo.checkIn)
+    : today.checkIn
+      ? formatTime(today.checkIn)
+      : "--";
   const hoursLabel =
     status === "Offline"
       ? "--"
@@ -288,9 +377,11 @@ function Dashboard() {
         ? formatHours(displayHours)
         : "0 hrs";
   const breakLabel =
-    today.breakHours != null && Number(today.breakHours) > 0
-      ? formatHours(today.breakHours)
-      : "--";
+    demo.isDemo && demo.breakStartedAt
+      ? formatBreakElapsed({ activeBreakStartedAt: demo.breakStartedAt }, now)
+      : today.breakHours != null && Number(today.breakHours) > 0
+        ? formatHours(today.breakHours)
+        : "--";
 
   const shiftStart = useMemo(() => {
     if (!shift?.startTime) return null;
@@ -342,7 +433,9 @@ function Dashboard() {
   );
   const daysWorked = week.filter((d) => d.value > 0).length;
 
-  const firstName = fullName(user.firstName, user.lastName, user.employeeId);
+  const firstName = demo.isDemo
+    ? `${demo.profile.firstName} ${demo.profile.lastName}`
+    : fullName(user.firstName, user.lastName, user.employeeId);
 
   const statusBlurb = isOnBreak
     ? "You're on a break. Resume when you're ready to continue."
@@ -401,6 +494,8 @@ function Dashboard() {
         <LiveClock />
       </header>
 
+      {demo.isDemo && <DemoBanner demo={demo} />}
+
       <Card className="p-5">
         <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex items-start gap-4">
@@ -428,10 +523,6 @@ function Dashboard() {
           </div>
 
           <div className="flex flex-wrap items-center gap-3">
-            <span className="inline-flex items-center gap-2 rounded-full border border-line bg-surface-raised px-3.5 py-1.5 text-xs font-medium text-ink-soft shadow-sm">
-              <Wifi className="h-3.5 w-3.5 text-success" aria-hidden="true" />
-              Presence Monitored: Active
-            </span>
             <span
               className={cn(
                 "inline-flex items-center gap-2 rounded-full px-3.5 py-1.5 text-xs font-semibold shadow-sm",
@@ -556,7 +647,7 @@ function Dashboard() {
                 variant="primary"
                 size="lg"
                 className="w-full"
-                onClick={handleBreakEnd}
+                onClick={dispatchBreakEnd}
                 loading={busyAction === "resume"}
                 leftIcon={Play}
               >
@@ -567,7 +658,7 @@ function Dashboard() {
                 variant="outline"
                 size="lg"
                 className="w-full"
-                onClick={handleEndWork}
+                onClick={dispatchEndWork}
                 loading={busyAction === "end"}
                 leftIcon={Square}
               >
@@ -578,7 +669,7 @@ function Dashboard() {
                 variant="primary"
                 size="lg"
                 className="w-full"
-                onClick={handleStartWork}
+                onClick={dispatchStartWork}
                 loading={busyAction === "start"}
                 disabled={beforeWindow}
                 leftIcon={Play}
@@ -610,7 +701,7 @@ function Dashboard() {
                     key={option.type}
                     icon={option.icon}
                     label={option.label}
-                    onSelect={() => handleBreakStart(option.type)}
+                    onSelect={() => dispatchBreakStart(option.type)}
                   />
                 ))}
               </Menu>
@@ -625,7 +716,12 @@ function Dashboard() {
                   On break
                 </span>
                 <span className="text-sm font-bold tabular text-warning">
-                  {formatBreakElapsed(today, now)}
+                  {demo.isDemo
+                    ? formatBreakElapsed(
+                        { activeBreakStartedAt: demo.breakStartedAt },
+                        now,
+                      )
+                    : formatBreakElapsed(today, now)}
                 </span>
               </div>
             </div>
@@ -724,14 +820,6 @@ function Dashboard() {
             </div>
           </div>
 
-          <div className="mt-4 flex items-center gap-2 rounded-lg bg-primary-soft px-3.5 py-2.5 text-xs font-medium text-ink-soft">
-            <UserCheck className="h-4 w-4 shrink-0 text-primary" aria-hidden="true" />
-            Proof-of-presence heartbeat is running in this tab — the session
-            pauses when the tab closes.
-            <span className="ml-auto hidden shrink-0 rounded-full bg-surface px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-primary sm:inline">
-              Live
-            </span>
-          </div>
         </Card>
       </section>
 
@@ -804,6 +892,42 @@ function Dashboard() {
           </ul>
         )}
       </Card>
+
+      <Modal
+        open={deskCheckOpen}
+        onClose={() => setDeskCheckOpen(false)}
+        title="Still at your desk?"
+        description="Quick check-in"
+        size="sm"
+        footer={
+          <Button
+            variant="primary"
+            onClick={() => {
+              setDeskCheckOpen(false);
+              resetDeskCheckTimer();
+            }}
+            leftIcon={CheckCircle2}
+          >
+            I'm here
+          </Button>
+        }
+      >
+        <div className="flex flex-col items-center py-4 text-center">
+          <span
+            className="grid h-16 w-16 place-items-center rounded-2xl border border-primary/30 bg-primary-soft text-primary"
+            aria-hidden="true"
+          >
+            <AlarmClock className="h-8 w-8" />
+          </span>
+          <p className="mt-4 text-sm font-medium text-ink">
+            Still at your desk? Click to acknowledge.
+          </p>
+          <p className="mt-1 text-[13px] leading-relaxed text-muted">
+            A friendly reminder after 30 minutes of work. Acknowledging
+            simply restarts the timer — no penalties, no locks.
+          </p>
+        </div>
+      </Modal>
     </div>
   );
 }

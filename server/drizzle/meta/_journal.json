@@ -8,6 +8,13 @@
       "when": 1790748985819,
       "tag": "0000_perpetual_queen_noir",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1791010735931,
+      "tag": "0001_workable_jamie_braddock",
+      "breakpoints": true
     }
   ]
 }

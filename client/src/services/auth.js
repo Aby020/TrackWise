@@ -1,8 +1,13 @@
 import api from "./api";
 
-/** POST /auth/login → { token, user }. */
-export async function login(employeeId, password) {
-  const { data } = await api.post("/auth/login", { employeeId, password });
+/**
+ * POST /auth/login → { token, user }.
+ *
+ * The backend accepts a single `identifier` that may be
+ * either the employee id or the corporate email.
+ */
+export async function login(identifier, password) {
+  const { data } = await api.post("/auth/login", { identifier, password });
   return data;
 }
 

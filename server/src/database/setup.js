@@ -82,7 +82,7 @@ const setupDatabase = async () => {
 const seedAdmin = async () => {
     const email = process.env.ADMIN_EMAIL || "admin@trackwise.app";
     const employeeId = process.env.ADMIN_EMPLOYEE_ID || "ADMIN001";
-    const password = process.env.ADMIN_PASSWORD || "TrackwiseDev2026";
+    const password = process.env.ADMIN_PASSWORD || "";
 
     const existing = await pool.query(
         "SELECT id FROM users WHERE role = 'admin' LIMIT 1",

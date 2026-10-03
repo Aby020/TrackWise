@@ -9,6 +9,7 @@ import {
   UserPlus,
   Users,
 } from "lucide-react";
+import { CreateEmployeeIdModal } from "../../components/admin/CreateEmployeeIdModal";
 import { Avatar } from "../../components/ui/Avatar";
 import { Button } from "../../components/ui/Button";
 import { Card } from "../../components/ui/Card";
@@ -35,6 +36,7 @@ function Dashboard() {
     notStartedToday: 0,
   });
   const [employees, setEmployees] = useState([]);
+  const [createModalOpen, setCreateModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -57,6 +59,10 @@ function Dashboard() {
   }, [load]);
 
   const adminName = fullName(user.firstName, user.lastName, user.employeeId);
+
+  const handleEmployeeCreated = () => {
+    load();
+  };
   const workingPct =
     stats.totalEmployees > 0
       ? Math.round((stats.workingToday / stats.totalEmployees) * 100)
@@ -120,6 +126,13 @@ function Dashboard() {
             leftIcon={Users}
           >
             Manage employees
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => setCreateModalOpen(true)}
+            leftIcon={UserPlus}
+          >
+            Create Employee ID
           </Button>
           <Button
             onClick={() => navigate("/admin/add-employee")}
@@ -273,6 +286,12 @@ function Dashboard() {
           )}
         </Card>
       </section>
+
+      <CreateEmployeeIdModal
+        open={createModalOpen}
+        onClose={() => setCreateModalOpen(false)}
+        onCreated={handleEmployeeCreated}
+      />
     </div>
   );
 }

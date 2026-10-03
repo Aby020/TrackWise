@@ -29,10 +29,19 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (response) => response,
   (error) => {
+    // Only a genuine auth failure clears the session. A 404 or any
+    // other error leaves the token intact so the user stays signed
+    // in and the calling code can surface an inline message.
     if (error.response?.status === 401) {
       localStorage.removeItem(TOKEN_KEY);
       localStorage.removeItem(USER_KEY);
-      window.dispatchEvent(new CustomEvent("tw:session-expired"));
+      window.dispatchEvent(
+        new CustomEvent("tw:session-expired", {
+          detail: {
+            message: "Session expired. Please sign in again.",
+          },
+        }),
+      );
     }
     return Promise.reject(error);
   },

@@ -1,0 +1,1 @@
+DROP TABLE "modern"."user_biometrics" CASCADE;

@@ -1,9 +1,8 @@
 import { useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import { KeyRound, ShieldCheck } from "lucide-react";
-import { AuthShell } from "../../components/auth/AuthShell";
-import { Button } from "../../components/ui/Button";
+import { ArrowRight, ShieldCheck } from "lucide-react";
+import { AuthPage } from "../../components/auth/AuthGlassCard";
 import { Input } from "../../components/ui/Input";
 import { PasswordField } from "../../components/auth/PasswordField";
 import { activateAccount } from "../../services/auth";
@@ -12,11 +11,11 @@ import { cn } from "../../lib/utils";
 const MIN_PASSWORD_LENGTH = 8;
 
 const STRENGTH_LEVELS = [
-  { key: "empty", label: "Password strength", score: 0 },
-  { key: "weak", label: "Weak", score: 1 },
-  { key: "fair", label: "Fair", score: 2 },
-  { key: "good", label: "Good", score: 3 },
-  { key: "strong", label: "Strong", score: 4 },
+  { key: "empty", label: "Password strength", score: 0, tone: "bg-slate-700" },
+  { key: "weak", label: "Weak", score: 1, tone: "bg-rose-500" },
+  { key: "fair", label: "Fair", score: 2, tone: "bg-amber-500" },
+  { key: "good", label: "Good", score: 3, tone: "bg-sky-500" },
+  { key: "strong", label: "Strong", score: 4, tone: "bg-emerald-500" },
 ];
 
 function scorePassword(value) {
@@ -37,16 +36,18 @@ function StrengthMeter({ value }) {
 
   const barTone =
     score <= 1
-      ? "bg-danger"
+      ? "bg-rose-500"
       : score === 2
-        ? "bg-warning"
+        ? "bg-amber-500"
         : score === 3
-          ? "bg-info"
-          : "bg-success";
+          ? "bg-sky-500"
+          : "bg-emerald-500";
 
   return (
     <div className="space-y-1.5" aria-live="polite">
-      <div className="flex gap-1.5" role="progressbar"
+      <div
+        className="flex gap-1.5"
+        role="progressbar"
         aria-valuenow={filled}
         aria-valuemin={0}
         aria-valuemax={4}
@@ -57,17 +58,17 @@ function StrengthMeter({ value }) {
             key={segment}
             className={cn(
               "h-1.5 flex-1 rounded-full transition-colors duration-200",
-              segment <= filled ? barTone : "bg-line",
+              segment <= filled ? barTone : "bg-slate-800",
             )}
           />
         ))}
       </div>
       <div className="flex items-center justify-between">
-        <p className="text-xs font-medium text-muted">
+        <p className="text-xs font-medium text-slate-400">
           {value ? level.label : "Use at least 8 characters"}
         </p>
         {score >= 3 && (
-          <p className="inline-flex items-center gap-1 text-xs font-medium text-success">
+          <p className="inline-flex items-center gap-1 text-xs font-medium text-emerald-400">
             <ShieldCheck className="h-3.5 w-3.5" aria-hidden="true" />
             Strong password
           </p>
@@ -87,6 +88,9 @@ function ActivateAccount() {
   const [busy, setBusy] = useState(false);
 
   const strength = useMemo(() => scorePassword(password), [password]);
+
+  const passwordsMatch =
+    password.length > 0 && confirmPassword.length > 0 && password === confirmPassword;
 
   const validate = () => {
     const next = {};
@@ -133,23 +137,25 @@ function ActivateAccount() {
   };
 
   return (
-    <AuthShell
+    <AuthPage
       title="Activate your account"
       subtitle="Set your password to finish activation"
+      backTo="/"
       footer={
         <>
-          <span className="text-muted">Already activated? </span>
+          <span className="text-slate-400">Already activated? </span>
           <Link
             to="/login"
-            className="font-medium text-primary transition-colors hover:text-primary-strong"
+            className="font-medium text-indigo-400 transition-colors hover:text-indigo-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/40 rounded"
           >
             Sign in
           </Link>
         </>
       }
     >
-      <form onSubmit={handleSubmit} noValidate className="mt-8 space-y-5">
+      <form onSubmit={handleSubmit} noValidate className="mt-6 space-y-5">
         <Input
+          variant="glass"
           label="Employee ID"
           name="employeeId"
           value={employeeId}
@@ -161,6 +167,7 @@ function ActivateAccount() {
         />
         <div className="space-y-3">
           <PasswordField
+            variant="glass"
             label="New Password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
@@ -175,6 +182,7 @@ function ActivateAccount() {
           </p>
         </div>
         <PasswordField
+          variant="glass"
           label="Confirm Password"
           value={confirmPassword}
           onChange={(e) => setConfirmPassword(e.target.value)}
@@ -184,17 +192,16 @@ function ActivateAccount() {
           required
         />
 
-        <Button
+        <button
           type="submit"
-          size="lg"
-          className="w-full"
-          loading={busy}
-          leftIcon={KeyRound}
+          disabled={busy || !passwordsMatch}
+          className="w-full flex items-center justify-center gap-2 py-3 px-5 rounded-xl font-medium text-white bg-indigo-600 hover:bg-indigo-500 active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed shadow-md shadow-indigo-600/25 border border-indigo-400/20 transition-all duration-150 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500/40"
         >
-          Activate & Continue
-        </Button>
+          <span>{busy ? "Activating account..." : "Activate Account"}</span>
+          {!busy && <ArrowRight className="w-4 h-4 shrink-0 transition-transform group-hover:translate-x-0.5" aria-hidden="true" />}
+        </button>
       </form>
-    </AuthShell>
+    </AuthPage>
   );
 }
 

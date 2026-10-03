@@ -1,4 +1,10 @@
-import { Link, NavLink, useLocation } from "react-router-dom";
+import { motion, useReducedMotion } from "framer-motion";
+import {
+  Link,
+  NavLink,
+  useLocation,
+  useNavigate,
+} from "react-router-dom";
 import { Moon, Sun } from "lucide-react";
 import { Logo } from "../brand/Logo";
 import { useAuth } from "../../context/AuthContext";
@@ -6,14 +12,17 @@ import { useTheme } from "../../context/ThemeContext";
 import { cn } from "../../lib/utils";
 
 const NAV_ANCHORS = [
-  { to: "/", label: "Home" },
+  { to: "/#home", label: "Home" },
   { to: "/#features", label: "Features" },
   { to: "/#how-it-works", label: "How it works" },
 ];
 
+const SPRING = { type: "spring", stiffness: 420, damping: 34 };
+
 function ThemeToggle() {
   const { theme, toggleTheme } = useTheme();
   const isDark = theme === "dark";
+  const reduceMotion = useReducedMotion();
 
   return (
     <button
@@ -23,17 +32,16 @@ function ThemeToggle() {
       aria-pressed={isDark}
       title={isDark ? "Switch to light mode" : "Switch to dark mode"}
       className={cn(
-        "relative inline-flex h-9 w-[74px] items-center rounded-full border border-line bg-surface px-1 shadow-sm",
-        "transition-colors duration-150 hover:border-line-strong",
+        "relative inline-flex h-9 w-[74px] shrink-0 items-center rounded-full border border-slate-700/60 bg-slate-900/70 px-1 shadow-sm",
+        "transition-colors duration-150 hover:border-slate-500",
         "focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary/20",
       )}
     >
-      <span
+      <motion.span
         aria-hidden="true"
-        className={cn(
-          "absolute h-[26px] w-[26px] rounded-full bg-primary shadow-sm transition-transform duration-200 ease-out",
-          isDark ? "translate-x-[34px]" : "translate-x-0",
-        )}
+        className="absolute h-[26px] w-[26px] rounded-full bg-gradient-to-r from-indigo-500 to-violet-600 shadow-sm"
+        animate={{ x: isDark ? 34 : 0 }}
+        transition={reduceMotion ? { duration: 0 } : SPRING}
       />
       <span
         className={cn(
@@ -57,14 +65,26 @@ function ThemeToggle() {
 
 function NavLinkItem({ to, label }) {
   const location = useLocation();
+  const navigate = useNavigate();
   const isHash = to.includes("#");
   const target = isHash ? "/" : to;
   const hash = isHash ? to.split("#")[1] : null;
-  const active =
-    !isHash && location.pathname === target;
+  const active = !isHash && location.pathname === target;
 
   const handleClick = (event) => {
     if (!isHash) return;
+    if (hash === "home") {
+      event.preventDefault();
+      if (location.pathname !== "/") {
+        navigate("/");
+        window.setTimeout(() => {
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        }, 60);
+      } else {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+      return;
+    }
     if (location.pathname !== "/") {
       event.preventDefault();
       window.location.href = to;
@@ -82,11 +102,11 @@ function NavLinkItem({ to, label }) {
       onClick={handleClick}
       aria-current={active ? "page" : undefined}
       className={cn(
-        "h-9 rounded-lg px-3 text-sm font-medium transition-colors duration-150",
+        "flex h-8 items-center rounded-full px-3.5 py-1.5 text-sm font-medium transition-all duration-150",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
         active
-          ? "bg-primary-soft text-primary"
-          : "text-muted hover:bg-slate-100 hover:text-ink",
+          ? "bg-slate-800/60 text-white"
+          : "text-slate-300 hover:bg-slate-800/60 hover:text-white",
       )}
     >
       {label}
@@ -97,16 +117,29 @@ function NavLinkItem({ to, label }) {
 export function GlobalHeader() {
   const { user, isAuthenticated } = useAuth();
   const { theme } = useTheme();
+  const location = useLocation();
+  const navigate = useNavigate();
 
   return (
-    <header className="sticky top-0 z-50 border-b border-line/70 bg-canvas/80 backdrop-blur-md">
-      <div className="mx-auto flex h-16 w-full max-w-6xl items-center gap-3 px-6 lg:px-8">
+    <div className="sticky top-0 z-50 px-4 pt-3 sm:px-6">
+      <header className="mx-auto flex w-full max-w-6xl items-center gap-2 rounded-full border border-slate-800/80 bg-slate-900/70 px-3 py-2.5 shadow-lg shadow-black/20 backdrop-blur-xl supports-[backdrop-filter]:bg-slate-900/70">
         <Link
           to="/"
           aria-label="TrackWise home"
-          className="rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+          onClick={(event) => {
+            event.preventDefault();
+            if (location.pathname !== "/") {
+              navigate("/");
+              window.setTimeout(() => {
+                window.scrollTo({ top: 0, behavior: "smooth" });
+              }, 60);
+            } else {
+              window.scrollTo({ top: 0, behavior: "smooth" });
+            }
+          }}
+          className="rounded-lg transition-transform duration-150 hover:scale-[1.03] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
         >
-          <Logo variant="dark" />
+          <Logo variant={theme === "dark" ? "light" : "dark"} />
         </Link>
 
         <nav
@@ -127,7 +160,7 @@ export function GlobalHeader() {
           {isAuthenticated ? (
             <Link
               to={user?.role === "admin" ? "/admin" : "/dashboard"}
-              className="inline-flex h-9 items-center rounded-lg bg-primary px-4 text-sm font-medium text-white shadow-sm transition-all duration-150 hover:bg-primary-strong active:scale-[0.98] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary/25"
+              className="inline-flex h-9 items-center rounded-xl bg-gradient-to-r from-indigo-500 to-indigo-600 px-5 py-2 text-sm font-semibold text-white shadow-md shadow-indigo-500/25 transition-all duration-150 hover:from-indigo-600 hover:to-indigo-700 hover:scale-[1.02] active:translate-y-0 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-indigo-500/30"
             >
               Go to portal
             </Link>
@@ -135,24 +168,30 @@ export function GlobalHeader() {
             <>
               <Link
                 to="/activate"
-                className="hidden h-9 items-center rounded-lg px-4 text-sm font-medium text-muted transition-colors duration-150 hover:text-ink sm:inline-flex focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                className="hidden h-9 items-center rounded-full border border-slate-700/60 px-4 text-sm font-semibold text-slate-300 transition-all duration-150 hover:border-slate-400 hover:text-white sm:inline-flex focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-slate-400/20"
               >
                 Activate account
               </Link>
               <Link
-                to="/login"
-                className="inline-flex h-9 items-center rounded-lg bg-primary px-4 text-sm font-medium text-white shadow-sm transition-all duration-150 hover:bg-primary-strong active:scale-[0.98] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary/25"
+                to="/dashboard?demo=true"
+                className="hidden h-9 items-center rounded-full border border-cyan-500/30 bg-cyan-500/10 px-4 text-sm font-semibold text-cyan-300 transition-all duration-150 hover:border-cyan-400/50 hover:text-cyan-200 sm:inline-flex focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-cyan-500/20"
               >
-                Sign in
+                Explore Live Demo
+              </Link>
+              <Link
+                to="/login"
+                className="inline-flex h-9 items-center rounded-xl bg-gradient-to-r from-indigo-500 to-indigo-600 px-5 py-2 text-sm font-semibold text-white shadow-md shadow-indigo-500/25 transition-all duration-150 hover:from-indigo-600 hover:to-indigo-700 hover:scale-[1.02] active:translate-y-0 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-indigo-500/30"
+              >
+                Sign In
               </Link>
             </>
           )}
         </div>
-      </div>
+      </header>
       <span
         className="sr-only"
         aria-live="polite"
       >{`Theme set to ${theme} mode`}</span>
-    </header>
+    </div>
   );
 }

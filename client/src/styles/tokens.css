@@ -19,11 +19,14 @@
   --color-primary-softer: var(--tw-primary-softer);
   --color-secondary: var(--tw-secondary);
   --color-violet: var(--tw-violet);
+  --color-accent: var(--tw-accent);
+  --color-accent-soft: var(--tw-accent-soft);
 
   /* Canvas + surface */
   --color-canvas: var(--tw-canvas);
   --color-surface: var(--tw-surface);
   --color-surface-raised: var(--tw-surface-raised);
+  --color-glass: var(--tw-glass);
 
   /* Text */
   --color-ink: var(--tw-ink);
@@ -51,10 +54,11 @@
   /* ------------------------------------------------------------------ */
   /* Typography                                                          */
   /* ------------------------------------------------------------------ */
-  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system,
+  --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, -apple-system,
     "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  --font-display: "Inter Tight", "Inter", ui-sans-serif, system-ui,
-    sans-serif;
+  --font-display: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular",
+    Menlo, Consolas, monospace;
 
   /* ------------------------------------------------------------------ */
   /* Elevation                                                           */
@@ -66,6 +70,8 @@
   /* ------------------------------------------------------------------ */
   /* Motion                                                              */
   /* ------------------------------------------------------------------ */
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
   --animate-fade-up: fade-up 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
   --animate-fade-in: fade-in 0.3s ease-out both;
   --animate-scale-in: scale-in 0.2s cubic-bezier(0.16, 1, 0.3, 1) both;
@@ -75,6 +81,11 @@
   --animate-spin-slow: spin 2.4s linear infinite;
   --animate-draw: draw 1s cubic-bezier(0.16, 1, 0.3, 1) both;
   --animate-tick: tick 1s ease-out both;
+  --animate-wave-drift: wave-drift 6s linear infinite;
+  --animate-ping-ring: ping-ring 2.4s cubic-bezier(0, 0, 0.2, 1) both;
+  --animate-orb-drift: orb-drift 14s ease-in-out infinite alternate;
+  --animate-dot-pulse: dot-pulse 2.2s ease-in-out infinite;
+  --animate-grid-pan: grid-pan 40s linear infinite;
 
   @keyframes fade-up {
     from {
@@ -151,6 +162,52 @@
       transform: translateY(0);
     }
   }
+  @keyframes wave-drift {
+    from {
+      background-position: 0 0;
+    }
+    to {
+      background-position: 220px 0;
+    }
+  }
+  @keyframes ping-ring {
+    0% {
+      transform: scale(0.9);
+      opacity: 0.7;
+    }
+    75%,
+    100% {
+      transform: scale(2.4);
+      opacity: 0;
+    }
+  }
+  @keyframes orb-drift {
+    from {
+      transform: translate3d(-12px, 8px, 0) scale(1);
+    }
+    to {
+      transform: translate3d(14px, -10px, 0) scale(1.06);
+    }
+  }
+  @keyframes dot-pulse {
+    0%,
+    100% {
+      opacity: 1;
+      box-shadow: 0 0 0 0 rgb(52 211 153 / 0.45);
+    }
+    50% {
+      opacity: 0.72;
+      box-shadow: 0 0 0 5px rgb(52 211 153 / 0);
+    }
+  }
+  @keyframes grid-pan {
+    from {
+      background-position: 0 0;
+    }
+    to {
+      background-position: 56px 56px;
+    }
+  }
 }
 
 /* ------------------------------------------------------------------ */
@@ -164,10 +221,13 @@
   --tw-primary-softer: #e0e7ff;
   --tw-secondary: #6366f1;
   --tw-violet: #7c3aed;
+  --tw-accent: #0891b2;
+  --tw-accent-soft: #cffafe;
 
   --tw-canvas: #f6f7fb;
   --tw-surface: #ffffff;
   --tw-surface-raised: #ffffff;
+  --tw-glass: rgb(255 255 255 / 0.72);
 
   --tw-ink: #0f172a;
   --tw-ink-soft: #334155;
@@ -177,7 +237,7 @@
   --tw-line: #e2e8f0;
   --tw-line-strong: #cbd5e1;
 
-  --tw-sidebar: #0b1020;
+  --tw-sidebar: #0a1120;
 
   --tw-success: #059669;
   --tw-success-soft: #d1fae5;
@@ -201,15 +261,18 @@
 /* ------------------------------------------------------------------ */
 [data-theme="dark"] {
   --tw-primary: #818cf8;
-  --tw-primary-strong: #6366f1;
+  --tw-primary-strong: #a5b4fc;
   --tw-primary-soft: rgb(99 102 241 / 0.14);
   --tw-primary-softer: rgb(99 102 241 / 0.24);
   --tw-secondary: #818cf8;
   --tw-violet: #a78bfa;
+  --tw-accent: #22d3ee;
+  --tw-accent-soft: rgb(34 211 238 / 0.13);
 
-  --tw-canvas: #090d16;
-  --tw-surface: #0f172a;
-  --tw-surface-raised: #131c2e;
+  --tw-canvas: #070913;
+  --tw-surface: #0b0f19;
+  --tw-surface-raised: #101625;
+  --tw-glass: rgb(11 15 25 / 0.62);
 
   --tw-ink: #e8edf6;
   --tw-ink-soft: #c3cbdc;
@@ -219,7 +282,7 @@
   --tw-line: rgb(148 163 184 / 0.14);
   --tw-line-strong: rgb(148 163 184 / 0.28);
 
-  --tw-sidebar: #070b13;
+  --tw-sidebar: #05080f;
 
   --tw-success: #34d399;
   --tw-success-soft: rgb(52 211 153 / 0.14);

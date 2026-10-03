@@ -1,5 +1,18 @@
 const adminService = require("../services/admin.service");
 
+const UPDATABLE = ['firstName', 'lastName', 'email', 'phone', 'department', 'designation'];
+
+const sanitizeEmployeePayload = (payload) => {
+    const source = payload && typeof payload === "object" ? payload : {};
+
+    return UPDATABLE.reduce((sanitized, field) => {
+        if (Object.prototype.hasOwnProperty.call(source, field)) {
+            sanitized[field] = source[field];
+        }
+        return sanitized;
+    }, {});
+};
+
 const getDashboardStatistics = async (req, res) => {
 
     try {
@@ -78,7 +91,7 @@ const updateEmployee = async (req, res) => {
 
             req.params.employeeId,
 
-            req.body
+            sanitizeEmployeePayload(req.body)
 
         );
 
