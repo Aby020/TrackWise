@@ -16,19 +16,34 @@
   <a href="https://trackwise-frontend-tla4.onrender.com" target="_blank" rel="noopener noreferrer">🔗 Live Demo</a>
 </p>
 
-<p align="center">
-  <img src="docs/screenshots/landing.png" alt="TrackWise landing page — dark theme with full scroll sections" width="100%">
-</p>
+## 📸 Visual Showcase
 
----
+<table>
+  <tr>
+    <td width="50%">
+      <h3>Modern Workforce Landing Page & Real-Time Presence Mockup</h3>
+      <img src="docs/screenshots/landing.png" alt="TrackWise landing page" width="100%">
+    </td>
+    <td width="50%">
+      <h3>Unified Multi-Identifier Sign-In (EMP ID / Corporate Email)</h3>
+      <img src="docs/screenshots/login.png" alt="Login card" width="100%">
+    </td>
+  </tr>
+  <tr>
+    <td width="50%">
+      <h3>Employee Dashboard — Instant Punch-In & Active Session Timer</h3>
+      <img src="docs/screenshots/demo-dashboard.png" alt="Demo dashboard" width="100%">
+    </td>
+    <td width="50%">
+      <h3>Admin Command Center — Employee Lifecycle & Shift Configuration</h3>
+      <img src="docs/screenshots/admin-console.png" alt="Admin console" width="100%">
+    </td>
+  </tr>
+</table>
 
-## 📖 Overview
+## 🏗️ Core Architecture
 
 TrackWise is a production-grade workforce-presence and shift-management platform. It combines a hardened TypeScript/Express backend (Drizzle ORM, PostgreSQL, JWT auth, strict IDOR guards, rate limiting) with a responsive React 19 front end (Vite, Tailwind CSS v4, ThemeContext with dark mode, and an interactive zero-DB live demo mode). Employees clock in and out in a single idempotent session; admins manage staff, shifts, and presence telemetry from a unified console.
-
----
-
-## 🏗️ System Architecture
 
 ```
 ┌─────────────────┐     REST (JSON)     ┌──────────────────────┐
@@ -49,8 +64,6 @@ TrackWise is a production-grade workforce-presence and shift-management platform
 - **Backend**: Node.js 20+, Express 5, TypeScript 7, Drizzle ORM 0.45, PostgreSQL 16, `jsonwebtoken`, `express-rate-limit`, `express-validator`, `bcrypt`.
 - **Schema**: Dual-schema support (`public.users` legacy + `modern.users` modern) with idempotent bootstrap (`db:setup`).
 
----
-
 ## ✨ Key Features
 
 | Area | Feature | Implementation |
@@ -68,36 +81,6 @@ TrackWise is a production-grade workforce-presence and shift-management platform
 | | CORS Allow-Lists | Configurable `CORS_ORIGIN`; production requires it set |
 | **Upcoming** | Hardware Telemetry & Presence Radar | Planned features (GPS verification, biometric integration, attendance analytics) |
 
----
-
-## 📸 Screenshots
-
-### Landing Page
-
-<p align="center">
-  <img src="docs/screenshots/landing.png" alt="TrackWise landing" width="100%">
-</p>
-
-### Login (Dark Theme)
-
-<p align="center">
-  <img src="docs/screenshots/login.png" alt="Login card" width="100%">
-</p>
-
-### Demo Dashboard (Live Mode)
-
-<p align="center">
-  <img src="docs/screenshots/demo-dashboard.png" alt="Demo dashboard" width="100%">
-</p>
-
-### Admin Console
-
-<p align="center">
-  <img src="docs/screenshots/admin-console.png" alt="Admin console" width="100%">
-</p>
-
----
-
 ## 🔐 Test Credentials
 
 | Role | Employee ID | Password | Note |
@@ -106,8 +89,6 @@ TrackWise is a production-grade workforce-presence and shift-management platform
 | Employee | `EMP101` | `Welcome@1234` | Activate account before login (if pending) |
 
 These are set via `ADMIN_PASSWORD` / `EMP_PASSWORD` in environment variables and read strictly from `process.env` (no hardcoded fallbacks in `scripts/sync-admin.cjs` or `scripts/quick-activate.cjs`).
-
----
 
 ## 🧪 Local Development Setup
 
@@ -180,8 +161,6 @@ cd client
 npm run dev   # http://localhost:5173
 ```
 
----
-
 ## 🚀 Render Deployment Runbook
 
 ### Build
@@ -218,8 +197,6 @@ Or directly:
 npm run build && node server.js
 ```
 
----
-
 ## 🛡️ Security & Audit Remediation
 
 - **Secret Leak & Gitignore**: `cc.bat` removed; `.gitignore` expanded (`cc.bat`, `*.bat`, `.backups/`, `*.log`).
@@ -231,21 +208,15 @@ npm run build && node server.js
 - **CORS Allow-Lists**: `CORS_ORIGIN` enforced; production requires it set.
 - **Sanitized Logging**: No inline `#` comments in modified code; no hardcoded secrets in repo.
 
----
-
 ## 🏛️ Development Notes
 
 - Type check: `npm run typecheck` (must return 0 errors).
 - Client build: `npm run build` (must return 0 errors).
 - Zero AI attribution enforced in commit messages.
 
----
-
 ## 🧭 Upcoming Features
 
 - Hardware Telemetry & Radar — GPS-verified presence tracking and real-time workforce heatmap.
-
----
 
 ## 📄 License
 

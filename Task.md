@@ -1,69 +1,44 @@
-Work only in:
+Work in:
 D:\AbiLabs\TrackWise
 
 Task:
-Create the master execution tracker file `task.md` for Phase 1 of the TrackWise Enterprise Modernization.
+Revamp the landing page typography, top navigation header/buttons, and global color palette using our installed `ui-styling` and `ui-ux-pro-max` skills.
 
-Instructions:
-Create a file named `task.md` in the root directory with the following contents, formatted cleanly with Markdown check-boxes for real-time progress tracking:
+Design Refinement Directives:
 
-# TrackWise Enterprise Modernization — Phase 1: Foundation & Data Architecture
+1. Typography Upgrade (client/index.html & client/src/index.css):
+   - Import Google Fonts: 'Plus Jakarta Sans' (weights 500, 600, 700, 800) and 'Bricolage Grotesque' (weights 700, 800).
+   - Ensure the headline font is properly applied in tailwind.config.js / tokens.css:
+     - Set font-display: 'Plus Jakarta Sans', sans-serif.
+     - Headline styling: `font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-b from-white via-slate-100 to-slate-400`.
+     - Highlight phrase ("for Modern Workplaces"): dynamic gradient `from-indigo-400 via-sky-300 to-emerald-400`.
 
-## Status Overview
-- Current Phase: Phase 1 (TypeScript, Drizzle ORM, Dynamic Shift Engine)
-- Target Stack: TypeScript 5.8+, Drizzle ORM, PostgreSQL (pg), Zod, Express 5 / Fastify
+2. Color Palette & Atmospheric Depth (client/src/pages/LandingPage.jsx & tokens.css):
+   - Canvas: Replace flat pitch-black with a deep layered obsidian surface (`#070a12` base).
+   - Add ambient lighting orbs behind the hero:
+     - Top-left subtle indigo radial bloom: `w-[500px] h-[500px] bg-indigo-600/15 blur-[120px] rounded-full pointer-events-none absolute -top-20 -left-20`.
+     - Right cyan/emerald bloom behind the preview terminal: `w-[400px] h-[400px] bg-emerald-500/10 blur-[100px] rounded-full pointer-events-none absolute top-40 right-10`.
+   - Subtle geometric grid overlay with radial vignette mask so it fades seamlessly into the edges.
 
----
+3. Top Navigation Bar (client/src/components/GlobalHeader.jsx or Header):
+   - Redesign into a modern floating glass capsule:
+     - Center it in a `max-w-6xl mx-auto px-6 py-3 mt-4` container.
+     - Background: `bg-slate-900/60 backdrop-blur-xl border border-slate-700/60 rounded-2xl shadow-xl shadow-black/40`.
+   - Nav Links ("Home", "Features", "How it works"):
+     - High-contrast typography with interactive hover pill background (`hover:bg-slate-800/70 text-slate-300 hover:text-white px-3.5 py-1.5 rounded-lg transition-all`).
+     - Active indicator: animated subtle under-glow or pill highlight.
+   - Action Buttons:
+     - "Activate account": Sleek ghost button with border sheen (`text-slate-300 hover:text-white border border-slate-700/60 hover:border-slate-500 px-4 py-2 rounded-xl text-sm font-semibold transition-all`).
+     - "Sign In": High-impact gradient button (`bg-gradient-to-r from-indigo-500 via-indigo-600 to-violet-600 hover:from-indigo-400 hover:to-violet-500 text-white font-semibold px-5 py-2 rounded-xl shadow-lg shadow-indigo-500/25 hover:shadow-indigo-500/40 hover:-translate-y-0.5 active:translate-y-0 transition-all text-sm`).
 
-## 1. Tooling & Environment Setup
-- [x] Initialize/Audit `tsconfig.json` with strict mode, ESNext module resolution, and path aliases (`@/*`)
-- [x] Install production dependencies: `drizzle-orm`, `pg`, `zod`, `dotenv`
-- [x] Install dev dependencies: `drizzle-kit`, `tsx`, `@types/pg`, `@types/node`, `typescript`
-- [x] Configure `drizzle.config.ts` targeting PostgreSQL connection pool
-- [x] Add migration scripts to `package.json` (`db:generate`, `db:push`, `db:seed`, `db:studio`)
+4. Hero Bullet Points & Feature Pill:
+   - "Employee attendance management" pill: Add subtle animated green pulse dot + `bg-indigo-950/40 border border-indigo-500/30 text-indigo-300`.
+   - Bullet checkmark items: Add subtle emerald gradient badge behind each icon (`bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 p-1 rounded-md`).
 
----
+5. Build & Quality Verification:
+   - Confirm fonts load reliably without FOIT/layout shift.
+   - Run `npm run build` in `client/` to verify zero errors.
+   - Zero inline "#" comments.
+   - ZERO AI ATTRIBUTION: No "Co-Authored-By", "Claude", or tool trailers anywhere in commits or code.
 
-## 2. Drizzle Relational Schema Definition (`src/db/schema.ts`)
-- [x] `users`: UUID primary key, employeeId (unique), firstName, lastName, email (unique), passwordHash, role enum ('admin', 'employee'), status enum ('pending', 'active', 'inactive'), timestamps
-- [x] `companyShifts`: Serial ID, shiftName, startTime ('08:30:00'), endTime ('17:00:00'), earlyCheckinGraceMinutes (15), isStrictEnforced (boolean), updatedAt
-- [x] `userBiometrics`: Serial ID, userId (FK users.id ON DELETE CASCADE), faceDescriptor (JSONB 128-float array), enrolledAt
-- [x] `attendanceRecords`: UUID primary key, userId (FK users.id ON DELETE CASCADE), workDate, checkIn, checkOut, netWorkingMinutes, breakMinutes, status enum ('working', 'on_break', 'completed', 'flagged'), sessionActive (boolean)
-- [x] `attendanceBreaks`: Serial ID, attendanceId (FK attendanceRecords.id ON DELETE CASCADE), userId (FK users.id), breakType ('lunch', 'tea', 'personal_gap'), startedAt, endedAt, durationMinutes
-- [x] `faceVerificationLogs`: Serial ID, attendanceId (FK attendanceRecords.id ON DELETE CASCADE), userId (FK users.id), status ('PASSED', 'MISSED', 'FAILED'), confidenceScore, checkedAt
-- [x] Define type exports: `$inferSelect` and `$inferInsert` for all tables
-
----
-
-## 3. Database Bootstrap & Seeding (`src/db/seed.ts`)
-- [x] Create idempotent bootstrap runner:
-  - [x] Connect via connection pool
-  - [x] Seed default Admin (`ADMIN001`, `TrackwiseDev2026`, role: 'admin') if not present
-  - [x] Seed default Company Shift (`08:30:00` to `17:00:00`, 15-min grace period) if not present
-- [x] Verify script exits cleanly with exit code 0 on repeated runs
-
----
-
-## 4. Dynamic Shift Engine & Admin API
-- [x] Create Zod schemas for shift update payload (`src/validations/shift.schema.ts`)
-- [x] Implement Shift Service (`src/services/shift.service.ts`):
-  - [x] `getActiveShift()`: fetch the currently active shift configuration
-  - [x] `updateActiveShift(data)`: update start/end times and enforcement parameters
-- [x] Implement Shift Controller & Route handlers:
-  - [x] `GET /api/admin/shifts/current`: protected by admin role guard
-  - [x] `PUT /api/admin/shifts/current`: validates with Zod, commits update, returns modified record
-- [x] Mount shift routes onto the main application router
-
----
-
-## 5. Verification & Quality Gates
-- [x] Run `npx drizzle-kit push` / migration to verify PostgreSQL table creation
-- [x] Execute `npm run db:seed` and verify database entries
-- [x] Run `npx tsc --noEmit` and confirm 0 type errors
-- [x] Test `GET` and `PUT` endpoints with curl / test script
-- [x] Ensure ZERO inline "#" comments in code
-- [x] Confirm ZERO AI attribution in git log or comments
-
----
-
-Write `task.md` directly. Do not start implementation yet. Report when the file is created.
+Execute the updates and report when the preview is compiled.
