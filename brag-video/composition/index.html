@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Sora:wght@700;800&family=JetBrains+Mono:wght@400;600&display=swap");
+
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body {
+        width: 1080px; height: 1920px; overflow: hidden;
+        background: #070913; font-family: "Inter", sans-serif; color: #f8fafc;
+      }
+
+      .grid-bg {
+        position: absolute; inset: -200px;
+        background-image: linear-gradient(to right, rgba(255,255,255,0.05) 1px, transparent 1px),
+                          linear-gradient(to bottom, rgba(255,255,255,0.05) 1px, transparent 1px);
+        background-size: 60px 60px;
+        opacity: 0.5; z-index: 0;
+      }
+
+      .scene {
+        position: absolute; top: 0; left: 0; width: 1080px; height: 1920px;
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+        opacity: 0; perspective: 1200px; z-index: 10;
+      }
+
+      .title {
+        font-family: "Sora", sans-serif; font-size: 72px; font-weight: 800;
+        letter-spacing: -0.05em; margin-bottom: 24px; text-align: center;
+        text-shadow: 0 0 40px rgba(14, 165, 233, 0.4);
+      }
+
+      .mono-text {
+        font-family: "JetBrains Mono", monospace; color: #0ea5e9; font-weight: 600;
+        font-size: 32px; letter-spacing: 0.1em; text-transform: uppercase;
+      }
+
+      .glass-card {
+        background: rgba(14, 21, 38, 0.75);
+        border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 40px;
+        padding: 40px; box-shadow: 0 40px 100px rgba(0,0,0,0.8);
+        position: relative; overflow: hidden;
+      }
+      .glass-card::before {
+        content: ""; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+        background: linear-gradient(90deg, transparent, #0ea5e9, transparent);
+      }
+
+      .image-container {
+        width: 800px; border-radius: 20px; border: 1px solid rgba(255, 255, 255, 0.12); overflow: hidden;
+      }
+      .image-container img { width: 100%; display: block; }
+
+      .status-badge {
+        font-family: "JetBrains Mono", monospace; font-size: 28px; color: #10b981;
+        background: rgba(16, 185, 129, 0.1); border: 2px solid rgba(16, 185, 129, 0.3);
+        padding: 12px 24px; border-radius: 12px; position: absolute; top: 60px; right: 60px;
+      }
+      .audio-clip { display: none; }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="20" data-width="1080" data-height="1920">
+      <div class="grid-bg" id="grid"></div>
+      <audio class="audio-clip clip" id="sfx-impact" src="assets/impact.wav" data-start="0.5" data-duration="0.5" data-track-index="0"></audio>
+      <audio class="audio-clip clip" id="sfx-tick" src="assets/tick.wav" data-start="3.5" data-duration="0.1" data-track-index="1"></audio>
+      <audio class="audio-clip clip" id="sfx-chime" src="assets/chime.wav" data-start="13.0" data-duration="0.6" data-track-index="2"></audio>
+
+      <!-- Scene 1: Entry (0-3.5) -->
+      <div class="scene" id="scene1">
+        <h1 class="title" id="title1">Workforce Presence,<br>Re-Engineered.</h1>
+        <div class="glass-card" id="card1">
+          <div class="image-container"><img src="assets/landing.png" alt="Landing"></div>
+        </div>
+      </div>
+
+      <!-- Scene 2: The Idempotent Engine (3.5-7.5) -->
+      <div class="scene" id="scene2">
+        <div class="status-badge" id="s2-status">[WORKING]</div>
+        <div class="glass-card" id="card2">
+          <div class="image-container" id="s2-img"><img src="assets/demo-dashboard.png" alt="Dashboard"></div>
+        </div>
+      </div>
+
+      <!-- Scene 3: Dual-Schema Unification (7.5-11.5) -->
+      <div class="scene" id="scene3">
+        <div class="mono-text" id="s3-code" style="font-size: 48px; background: rgba(0,0,0,0.8); padding: 40px; border-radius: 20px; border: 1px solid #1a2b4c;">
+          public.users ⇄ modern.users
+        </div>
+      </div>
+
+      <!-- Scene 4: Web Audio Watchdog (11.5-15.0) -->
+      <div class="scene" id="scene4">
+        <div class="glass-card" id="card4" style="text-align:center; padding: 100px;">
+          <div style="font-size: 150px; font-weight: 800; color: #10b981; font-family: 'Sora';" id="s4-time">30:00</div>
+          <div class="mono-text" style="font-size: 24px; margin-top:20px;">Native Web Audio Pulse</div>
+        </div>
+      </div>
+
+      <!-- Scene 5: Admin Command & Specs (15.0-20) -->
+      <div class="scene" id="scene5">
+        <div class="glass-card" id="card5">
+          <div class="image-container" style="margin-bottom:40px;"><img src="assets/admin-console.png" alt="Admin Console"></div>
+          <div class="mono-text" style="font-size:24px; color:#f8fafc; text-align:center;">
+            React 19 • TypeScript • PostgreSQL<br>Drizzle • Render
+          </div>
+        </div>
+        <div style="margin-top: 60px; text-align:center;" id="outro">
+          <h2 style="font-family:'Sora'; font-size:48px; color:#10b981;">trackwise-client.onrender.com</h2>
+          <div class="mono-text" style="font-size:24px; margin-top:20px; opacity:0.7;">github.com/Aby020/TrackWise</div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true, defaults: { ease: "power3.inOut" } });
+
+      tl.to("#grid", { y: -60, duration: 2, ease: "linear", repeat: 10 }, 0);
+
+      tl.set("#scene1", { opacity: 1, rotationX: 6, rotationY: -3, z: -200 }, 0);
+      tl.from("#title1", { y: 100, opacity: 0, duration: 0.8 }, 0.5);
+      tl.from("#card1", { y: 200, opacity: 0, duration: 1.0 }, 0.7);
+      tl.to("#scene1", { opacity: 0, scale: 0.9, duration: 0.5 }, 3.0);
+
+      tl.set("#scene2", { opacity: 1, rotationX: -4, rotationY: 2, z: -100 }, 3.5);
+      tl.from("#card2", { scale: 1.2, opacity: 0, duration: 0.8 }, 3.5);
+      tl.from("#s2-status", { opacity: 0, scale: 0.5, duration: 0.4 }, 4.5);
+      tl.to("#s2-img", { scale: 1.1, duration: 3.5, ease: "linear" }, 4.0);
+      tl.to("#scene2", { opacity: 0, y: -100, duration: 0.5 }, 7.0);
+
+      tl.set("#scene3", { opacity: 1, z: 0 }, 7.5);
+      tl.from("#s3-code", { scale: 0.8, opacity: 0, y: 50, duration: 0.8, ease: "back.out(1.7)" }, 7.5);
+      tl.to("#scene3", { opacity: 0, duration: 0.5 }, 11.0);
+
+      tl.set("#scene4", { opacity: 1 }, 11.5);
+      tl.from("#card4", { opacity: 0, rotationX: 90, transformOrigin: "50% 100%", duration: 0.8 }, 11.5);
+      tl.to("#s4-time", { scale: 1.1, opacity: 0.8, duration: 0.2, yoyo: true, repeat: 7 }, 12.5);
+      tl.to("#scene4", { opacity: 0, scale: 1.2, duration: 0.5 }, 14.5);
+
+      tl.set("#scene5", { opacity: 1, rotationX: 4, rotationY: -2 }, 15.0);
+      tl.from("#card5", { x: -300, opacity: 0, duration: 0.8 }, 15.0);
+      tl.from("#outro", { y: 100, opacity: 0, duration: 0.8 }, 18.5);
+
+      window.__timelines["main"] = tl;
+      tl.seek(0);
+    </script>
+  </body>
+</html>
