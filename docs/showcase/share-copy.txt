@@ -1,0 +1,14 @@
+Resolving biometric latency, state race conditions during peak clock-in hours, and fragmented dual-schema legacy databases requires more than a standard CRUD app. We needed a verifiable, idempotent state engine for workforce presence. TrackWise is our answer to the bottlenecks of enterprise identity bridging.
+
+The Stack: React 19, TypeScript, Tailwind CSS, Node.js, Express, Drizzle ORM, PostgreSQL, Playwright.
+
+Core Engineering Solutions:
+• Dual-schema lookup engine bridging modern and legacy auth without downtime.
+• Idempotent state handling to guarantee single-session truth across flaky network drops.
+• Zero-latency Web Audio API watchdog for precise interval presence checks.
+• 32-byte JWT fail-fast guard resolving IDOR risks at the edge.
+
+Test the Live Demo (Zero-DB mode): https://trackwise-client.onrender.com/dashboard?demo=true
+GitHub Repository: https://github.com/Aby020/TrackWise
+
+#SoftwareEngineering #TypeScript #PostgreSQL #SystemDesign #FullStack

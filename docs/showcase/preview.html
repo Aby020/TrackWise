@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TrackWise Showcase Preview</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      background-color: #000;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    }
+
+    .canvas-container {
+      width: 1080px;
+      height: 1920px;
+      transform-origin: center center;
+      /* Scale using max height to fit standard screens while maintaining 9:16 aspect ratio */
+      max-height: 90vh;
+      aspect-ratio: 9/16;
+      background-color: #060814;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+    }
+
+    .glass-panel {
+      background: rgba(255, 255, 255, 0.03);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Radial mesh background */
+    .radial-mesh {
+      position: absolute;
+      inset: 0;
+      background-image: radial-gradient(circle at center, rgba(37, 99, 235, 0.15) 0%, transparent 60%),
+                        linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                        linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+      background-size: 100% 100%, 40px 40px, 40px 40px;
+      z-index: 0;
+    }
+
+    .beat {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 4rem;
+      z-index: 10;
+      animation: beatCycle 18s infinite;
+    }
+
+    /* 5 beats, 18s total. Each beat gets ~3.6s (20% of the timeline). */
+    @keyframes beatCycle {
+      0%, 3% { opacity: 0; transform: scale(1.05); }
+      5%, 17% { opacity: 1; transform: scale(1); }
+      19%, 100% { opacity: 0; transform: scale(0.95); }
+    }
+
+    .beat-1 { animation-delay: 0s; }
+    .beat-2 { animation-delay: 3.6s; }
+    .beat-3 { animation-delay: 7.2s; }
+    .beat-4 { animation-delay: 10.8s; }
+    .beat-5 { animation-delay: 14.4s; }
+
+    .image-asset {
+      object-fit: cover;
+      border-radius: 1rem;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.5);
+    }
+
+    .overlay-text {
+      text-align: center;
+      margin-top: 3rem;
+      z-index: 20;
+    }
+
+    .gradient-text {
+      background: linear-gradient(to right, #60a5fa, #c084fc);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="canvas-container" style="zoom: 0.4;">
+    <div class="radial-mesh"></div>
+
+    <!-- Beat 1 (0.0s - 3.5s) | The Hook -->
+    <div class="beat beat-1">
+      <div class="relative w-full aspect-video transform rotate-y-12 rotate-x-6 scale-95 perspective-1000">
+        <!-- Fallback styling to simulate the screenshot if missing locally -->
+        <div class="image-asset w-full h-full bg-slate-800 flex items-center justify-center relative overflow-hidden">
+          <img src="../screenshots/landing.png" class="absolute inset-0 w-full h-full object-cover opacity-80" alt="Landing" onerror="this.style.display='none'">
+          <div class="absolute inset-0 bg-blue-900/40 mix-blend-overlay"></div>
+        </div>
+      </div>
+      <div class="overlay-text space-y-4">
+        <h1 class="text-6xl font-bold tracking-tight text-white">Workforce Presence,<br/><span class="gradient-text">Re-Engineered.</span></h1>
+        <p class="text-3xl text-neutral-400 font-medium">Sub-second punch sessions. Zero biometric bottlenecks.</p>
+      </div>
+    </div>
+
+    <!-- Beat 2 (3.5s - 7.0s) | The Idempotent Shift Engine -->
+    <div class="beat beat-2 flex-col justify-center gap-12">
+      <div class="glass-panel p-8 rounded-3xl w-full max-w-2xl text-center shadow-2xl relative">
+        <img src="../screenshots/demo-dashboard.png" class="w-full h-64 object-cover rounded-xl opacity-90 mx-auto" alt="Dashboard" onerror="this.style.display='none'">
+        <div class="mt-8 flex justify-center items-center gap-4">
+          <div class="h-6 w-6 rounded-full bg-emerald-500 animate-pulse"></div>
+          <span class="text-emerald-400 font-mono text-4xl border border-emerald-400 px-4 py-2 rounded-lg bg-emerald-400/10">[WORKING]</span>
+        </div>
+      </div>
+      <div class="overlay-text space-y-4">
+        <h2 class="text-6xl font-bold text-white">Idempotent Session State</h2>
+        <p class="text-3xl text-neutral-400 leading-relaxed font-medium">Guaranteed single-session truth across flaky network reconnections.</p>
+      </div>
+    </div>
+
+    <!-- Beat 3 (7.0s - 10.5s) | Zero-Downtime Dual-Schema Resolution -->
+    <div class="beat beat-3">
+      <div class="glass-panel text-left p-8 rounded-2xl w-full mb-10 h-96 flex flex-col justify-center shadow-2xl relative overflow-hidden">
+        <div class="absolute inset-x-0 top-0 h-10 border-b border-white/10 bg-black/40 flex items-center px-4">
+          <div class="flex gap-2"><div class="w-3 h-3 rounded-full bg-red-500"></div><div class="w-3 h-3 rounded-full bg-yellow-500"></div><div class="w-3 h-3 rounded-full bg-green-500"></div></div>
+        </div>
+        <div class="font-mono text-2xl text-neutral-300 mt-10 space-y-6">
+          <div class="text-emerald-400">SELECT * FROM db.resolve_identity('EMP-101')</div>
+          <div class="flex items-center justify-between border-t border-white/10 pt-4 opacity-80">
+            <div><span class="text-blue-400">public.users</span> (Legacy)</div>
+            <div class="text-5xl text-neutral-500">⇄</div>
+            <div><span class="text-purple-400">modern.users</span> (Drizzle)</div>
+          </div>
+        </div>
+      </div>
+      <div class="overlay-text space-y-4">
+        <h2 class="text-6xl font-bold text-white tracking-tight">Dual-Schema Identity Engine</h2>
+        <p class="text-3xl text-neutral-400 leading-relaxed font-medium">EMP-101 ⇄ EMP101 normalized identity bridging with zero downtime.</p>
+      </div>
+    </div>
+
+    <!-- Beat 4 (10.5s - 14.0s) | Native Web Audio Watchdog -->
+    <div class="beat beat-4 gap-16">
+      <div class="relative w-80 h-80 flex items-center justify-center">
+        <!-- Audiowave simulation ring -->
+        <div class="absolute inset-0 border-[8px] border-blue-500/30 rounded-full"></div>
+        <div class="absolute inset-0 border-t-[8px] border-blue-400 rounded-full animate-[spin_3s_linear_infinite]"></div>
+        <div class="absolute inset-4 border-[6px] border-purple-500/20 rounded-full"></div>
+        <div class="absolute inset-4 border-b-[6px] border-purple-400 rounded-full animate-[spin_2s_linear_infinite_reverse]"></div>
+        <div class="font-mono text-5xl text-white font-bold tracking-widest pl-2">30:00</div>
+      </div>
+      <div class="overlay-text space-y-4">
+        <h2 class="text-6xl font-bold text-white">Zero-Latency<br/>Presence Watchdog</h2>
+        <p class="text-3xl text-neutral-400 max-w-[800px] leading-relaxed mx-auto">Native browser Web Audio chime. 0 external asset overhead.</p>
+      </div>
+    </div>
+
+    <!-- Beat 5 (14.0s - 18.0s) | Architecture Spec & Live Demo CTA -->
+    <div class="beat beat-5">
+      <div class="glass-panel w-full p-12 rounded-3xl relative overflow-hidden backdrop-blur-3xl shadow-2xl">
+        <div class="absolute inset-0 opacity-20 bg-center bg-cover mix-blend-luminosity z-0" style="background-image: url('../screenshots/admin-console.png')"></div>
+        <div class="relative z-10 space-y-12 text-center">
+          <h2 class="text-6xl font-bold text-white mb-2 tracking-tight">Hardened Enterprise Core</h2>
+
+          <div class="flex flex-wrap justify-center gap-4 text-3xl font-mono text-neutral-300">
+            <span class="px-5 py-3 rounded-xl bg-white/5 border border-white/10">Postgres</span>
+            <span class="px-5 py-3 rounded-xl bg-white/5 border border-white/10">Drizzle</span>
+            <span class="px-5 py-3 rounded-xl bg-white/5 border border-white/10">Express</span>
+            <span class="px-5 py-3 rounded-xl bg-white/5 border border-white/10 text-blue-400">React 19</span>
+            <span class="px-5 py-3 rounded-xl bg-white/5 border border-white/10 text-emerald-400">Playwright</span>
+          </div>
+
+          <div class="pt-8">
+            <a class="inline-block bg-white text-black font-bold text-4xl px-12 py-6 rounded-full shadow-[0_0_40px_rgba(255,255,255,0.3)]">
+              Test Live Demo: /dashboard?demo=true
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    // Scale standard 1080x1920 dynamically to fit whatever physical window size exists
+    function scaleContainer() {
+      const container = document.querySelector('.canvas-container');
+      const maxH = window.innerHeight * 0.95;
+      const aspectScale = maxH / 1920;
+      container.style.zoom = aspectScale;
+    }
+    window.addEventListener('resize', scaleContainer);
+    scaleContainer();
+  </script>
+</body>
+</html>
