@@ -1,208 +1,271 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>TrackWise Showcase Preview</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <style>
-    body {
-      background-color: #000;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-      margin: 0;
-      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-    }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TrackWise Showcase Preview</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Sora:wght@700;800&family=JetBrains+Mono:wght@400;600&display=swap');
 
-    .canvas-container {
-      width: 1080px;
-      height: 1920px;
-      transform-origin: center center;
-      /* Scale using max height to fit standard screens while maintaining 9:16 aspect ratio */
-      max-height: 90vh;
-      aspect-ratio: 9/16;
-      background-color: #060814;
-      position: relative;
-      overflow: hidden;
-      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-      border: 1px solid rgba(255, 255, 255, 0.12);
-    }
+  :root {
+    --bg: #070913;
+    --surface: #0e1526;
+    --surface-glass: rgba(14, 21, 38, 0.75);
+    --border: #1a2b4c;
+    --text-strong: #f8fafc;
+    --text-body: #94a3b8;
+    --accent: #10b981;
+    --accent-glow: rgba(16, 185, 129, 0.4);
+    --accent-alt: #0ea5e9;
+    --error: #ef4444;
+  }
 
-    .glass-panel {
-      background: rgba(255, 255, 255, 0.03);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
-    }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
 
-    /* Radial mesh background */
-    .radial-mesh {
-      position: absolute;
-      inset: 0;
-      background-image: radial-gradient(circle at center, rgba(37, 99, 235, 0.15) 0%, transparent 60%),
-                        linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-                        linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
-      background-size: 100% 100%, 40px 40px, 40px 40px;
-      z-index: 0;
-    }
+  body {
+    background-color: #030408;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    font-family: 'Inter', -apple-system, sans-serif;
+  }
 
-    .beat {
-      position: absolute;
-      inset: 0;
-      opacity: 0;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      padding: 4rem;
-      z-index: 10;
-      animation: beatCycle 18s infinite;
-    }
+  .device-frame {
+    width: 360px;
+    height: 640px;
+    background: var(--bg);
+    position: relative;
+    overflow: hidden;
+    border-radius: 28px;
+    box-shadow: 0 0 0 12px #0a0e17, 0 32px 64px rgba(0,0,0,0.9);
+    border: 1px solid var(--border);
+  }
 
-    /* 5 beats, 18s total. Each beat gets ~3.6s (20% of the timeline). */
-    @keyframes beatCycle {
-      0%, 3% { opacity: 0; transform: scale(1.05); }
-      5%, 17% { opacity: 1; transform: scale(1); }
-      19%, 100% { opacity: 0; transform: scale(0.95); }
-    }
+  /* Telemetry Grid Background */
+  .grid-bg {
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(to right, var(--border) 1px, transparent 1px),
+      linear-gradient(to bottom, var(--border) 1px, transparent 1px);
+    background-size: 24px 24px;
+    opacity: 0.25;
+    z-index: 0;
+    transform: perspective(500px) rotateX(15deg) scale(1.2);
+    transform-origin: top center;
+    animation: gridMove 20s linear infinite;
+  }
 
-    .beat-1 { animation-delay: 0s; }
-    .beat-2 { animation-delay: 3.6s; }
-    .beat-3 { animation-delay: 7.2s; }
-    .beat-4 { animation-delay: 10.8s; }
-    .beat-5 { animation-delay: 14.4s; }
+  .content-layer {
+    position: absolute;
+    inset: 0;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    padding: 40px 24px;
+  }
 
-    .image-asset {
-      object-fit: cover;
-      border-radius: 1rem;
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.5);
-    }
+  h1 {
+    font-family: 'Sora', sans-serif;
+    font-size: 32px;
+    font-weight: 800;
+    color: var(--text-strong);
+    letter-spacing: -0.05em;
+    margin-bottom: 8px;
+    text-shadow: 0 0 20px rgba(14, 165, 233, 0.4);
+    transform: translateY(20px);
+    opacity: 0;
+    animation: slideUp 0.8s cubic-bezier(0.2, 1, 0.2, 1) 0.5s forwards;
+  }
 
-    .overlay-text {
-      text-align: center;
-      margin-top: 3rem;
-      z-index: 20;
-    }
+  .subtitle {
+    color: var(--accent-alt);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 24px;
+    opacity: 0;
+    animation: fadeIn 0.8s 0.8s forwards;
+  }
 
-    .gradient-text {
-      background: linear-gradient(to right, #60a5fa, #c084fc);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-  </style>
+  /* Glass Card */
+  .glass-card {
+    background: var(--surface-glass);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 16px;
+    margin-bottom: 16px;
+    transform: translateY(30px);
+    opacity: 0;
+    animation: slideUp 0.8s cubic-bezier(0.2, 1, 0.2, 1) 1.2s forwards;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  }
+
+  .glass-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; height: 1px;
+    background: linear-gradient(90deg, transparent, var(--accent-alt), transparent);
+  }
+
+  .screenshot-container {
+    width: 100%;
+    height: 120px;
+    background-color: #000;
+    border-radius: 8px;
+    margin-bottom: 14px;
+    border: 1px solid var(--border);
+    position: relative;
+    overflow: hidden;
+    background-image: url('../screenshots/demo-dashboard.png');
+    background-size: cover;
+    background-position: center 20%;
+  }
+
+  .screenshot-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(14, 21, 38, 0.9) 0%, transparent 100%);
+  }
+
+  .tech-label {
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--text-strong);
+    font-size: 13px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .tech-label::before {
+    content: '';
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    background: var(--accent);
+    border-radius: 50%;
+    box-shadow: 0 0 12px var(--accent-glow);
+    animation: pulse 2s infinite;
+  }
+
+  .desc {
+    color: var(--text-body);
+    font-size: 13px;
+    line-height: 1.5;
+    margin-top: 8px;
+  }
+
+  .terminal-box {
+    background: rgba(0, 0, 0, 0.6);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--accent-alt);
+    margin-top: auto;
+    opacity: 0;
+    animation: slideUp 0.8s 1.8s forwards;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .terminal-box::after {
+    content: '';
+    position: absolute;
+    top: 0; left: -100%; width: 50%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(14, 165, 233, 0.1), transparent);
+    animation: sweep 4s linear infinite 2s;
+  }
+
+  .terminal-line {
+    overflow: hidden;
+    white-space: nowrap;
+    border-right: 2px solid var(--accent);
+    animation: typing 2.5s steps(40, end) 2.2s forwards, blink-caret 0.75s step-end infinite;
+    width: 0;
+  }
+
+  .status-badge {
+    position: absolute;
+    top: 16px; right: 16px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--accent);
+    background: rgba(16, 185, 129, 0.1);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    padding: 4px 8px;
+    border-radius: 4px;
+    z-index: 20;
+  }
+
+  @keyframes gridMove {
+    from { background-position: 0 0; }
+    to { background-position: 0 48px; }
+  }
+  @keyframes slideUp {
+    to { transform: translateY(0); opacity: 1; }
+  }
+  @keyframes fadeIn {
+    to { opacity: 1; }
+  }
+  @keyframes typing {
+    from { width: 0 }
+    to { width: 100% }
+  }
+  @keyframes blink-caret {
+    from, a { border-color: transparent }
+    50% { border-color: var(--accent); }
+  }
+  @keyframes pulse {
+    0% { transform: scale(1); opacity: 1; box-shadow: 0 0 12px var(--accent-glow); }
+    50% { transform: scale(1.5); opacity: 0.5; box-shadow: 0 0 20px var(--accent-glow); }
+    100% { transform: scale(1); opacity: 1; box-shadow: 0 0 12px var(--accent-glow); }
+  }
+  @keyframes sweep {
+    to { left: 200%; }
+  }
+</style>
 </head>
 <body>
+  <div class="device-frame">
+    <div class="grid-bg"></div>
+    <div class="status-badge">LIVE DEMO</div>
+    <div class="content-layer">
+      <div class="subtitle">ID-ENGINE V2.0 // HIGH-ASSURANCE</div>
+      <h1>TrackWise</h1>
 
-  <div class="canvas-container" style="zoom: 0.4;">
-    <div class="radial-mesh"></div>
+      <div class="glass-card">
+        <div class="screenshot-container">
+          <div class="screenshot-overlay"></div>
+        </div>
+        <div class="tech-label">Idempotent Shift Engine</div>
+        <div class="desc">Conflict-free concurrent punch resolution. Zero state divergence on degraded networks.</div>
+      </div>
 
-    <!-- Beat 1 (0.0s - 3.5s) | The Hook -->
-    <div class="beat beat-1">
-      <div class="relative w-full aspect-video transform rotate-y-12 rotate-x-6 scale-95 perspective-1000">
-        <!-- Fallback styling to simulate the screenshot if missing locally -->
-        <div class="image-asset w-full h-full bg-slate-800 flex items-center justify-center relative overflow-hidden">
-          <img src="../screenshots/landing.png" class="absolute inset-0 w-full h-full object-cover opacity-80" alt="Landing" onerror="this.style.display='none'">
-          <div class="absolute inset-0 bg-blue-900/40 mix-blend-overlay"></div>
+      <div class="glass-card" style="animation-delay: 1.5s;">
+        <div class="tech-label" style="gap: 10px;">
+          <span style="color: var(--accent-alt);">[SYS]</span>
+          Dual-Schema Bridging
+        </div>
+        <div class="desc" style="margin-bottom: 4px;">
+          Seamlessly maps <code style="color: var(--text-strong);">public.users</code> ⇄ <code style="color: var(--text-strong);">modern.users</code> via 32-byte JWT guard.
         </div>
       </div>
-      <div class="overlay-text space-y-4">
-        <h1 class="text-6xl font-bold tracking-tight text-white">Workforce Presence,<br/><span class="gradient-text">Re-Engineered.</span></h1>
-        <p class="text-3xl text-neutral-400 font-medium">Sub-second punch sessions. Zero biometric bottlenecks.</p>
+
+      <div class="terminal-box">
+        <div style="color: var(--text-body); opacity: 0.6; margin-bottom: 6px;">> init watchdog --native-audio</div>
+        <div class="terminal-line" style="color: var(--accent);">[OK] 30m background hook attached.</div>
       </div>
     </div>
-
-    <!-- Beat 2 (3.5s - 7.0s) | The Idempotent Shift Engine -->
-    <div class="beat beat-2 flex-col justify-center gap-12">
-      <div class="glass-panel p-8 rounded-3xl w-full max-w-2xl text-center shadow-2xl relative">
-        <img src="../screenshots/demo-dashboard.png" class="w-full h-64 object-cover rounded-xl opacity-90 mx-auto" alt="Dashboard" onerror="this.style.display='none'">
-        <div class="mt-8 flex justify-center items-center gap-4">
-          <div class="h-6 w-6 rounded-full bg-emerald-500 animate-pulse"></div>
-          <span class="text-emerald-400 font-mono text-4xl border border-emerald-400 px-4 py-2 rounded-lg bg-emerald-400/10">[WORKING]</span>
-        </div>
-      </div>
-      <div class="overlay-text space-y-4">
-        <h2 class="text-6xl font-bold text-white">Idempotent Session State</h2>
-        <p class="text-3xl text-neutral-400 leading-relaxed font-medium">Guaranteed single-session truth across flaky network reconnections.</p>
-      </div>
-    </div>
-
-    <!-- Beat 3 (7.0s - 10.5s) | Zero-Downtime Dual-Schema Resolution -->
-    <div class="beat beat-3">
-      <div class="glass-panel text-left p-8 rounded-2xl w-full mb-10 h-96 flex flex-col justify-center shadow-2xl relative overflow-hidden">
-        <div class="absolute inset-x-0 top-0 h-10 border-b border-white/10 bg-black/40 flex items-center px-4">
-          <div class="flex gap-2"><div class="w-3 h-3 rounded-full bg-red-500"></div><div class="w-3 h-3 rounded-full bg-yellow-500"></div><div class="w-3 h-3 rounded-full bg-green-500"></div></div>
-        </div>
-        <div class="font-mono text-2xl text-neutral-300 mt-10 space-y-6">
-          <div class="text-emerald-400">SELECT * FROM db.resolve_identity('EMP-101')</div>
-          <div class="flex items-center justify-between border-t border-white/10 pt-4 opacity-80">
-            <div><span class="text-blue-400">public.users</span> (Legacy)</div>
-            <div class="text-5xl text-neutral-500">⇄</div>
-            <div><span class="text-purple-400">modern.users</span> (Drizzle)</div>
-          </div>
-        </div>
-      </div>
-      <div class="overlay-text space-y-4">
-        <h2 class="text-6xl font-bold text-white tracking-tight">Dual-Schema Identity Engine</h2>
-        <p class="text-3xl text-neutral-400 leading-relaxed font-medium">EMP-101 ⇄ EMP101 normalized identity bridging with zero downtime.</p>
-      </div>
-    </div>
-
-    <!-- Beat 4 (10.5s - 14.0s) | Native Web Audio Watchdog -->
-    <div class="beat beat-4 gap-16">
-      <div class="relative w-80 h-80 flex items-center justify-center">
-        <!-- Audiowave simulation ring -->
-        <div class="absolute inset-0 border-[8px] border-blue-500/30 rounded-full"></div>
-        <div class="absolute inset-0 border-t-[8px] border-blue-400 rounded-full animate-[spin_3s_linear_infinite]"></div>
-        <div class="absolute inset-4 border-[6px] border-purple-500/20 rounded-full"></div>
-        <div class="absolute inset-4 border-b-[6px] border-purple-400 rounded-full animate-[spin_2s_linear_infinite_reverse]"></div>
-        <div class="font-mono text-5xl text-white font-bold tracking-widest pl-2">30:00</div>
-      </div>
-      <div class="overlay-text space-y-4">
-        <h2 class="text-6xl font-bold text-white">Zero-Latency<br/>Presence Watchdog</h2>
-        <p class="text-3xl text-neutral-400 max-w-[800px] leading-relaxed mx-auto">Native browser Web Audio chime. 0 external asset overhead.</p>
-      </div>
-    </div>
-
-    <!-- Beat 5 (14.0s - 18.0s) | Architecture Spec & Live Demo CTA -->
-    <div class="beat beat-5">
-      <div class="glass-panel w-full p-12 rounded-3xl relative overflow-hidden backdrop-blur-3xl shadow-2xl">
-        <div class="absolute inset-0 opacity-20 bg-center bg-cover mix-blend-luminosity z-0" style="background-image: url('../screenshots/admin-console.png')"></div>
-        <div class="relative z-10 space-y-12 text-center">
-          <h2 class="text-6xl font-bold text-white mb-2 tracking-tight">Hardened Enterprise Core</h2>
-
-          <div class="flex flex-wrap justify-center gap-4 text-3xl font-mono text-neutral-300">
-            <span class="px-5 py-3 rounded-xl bg-white/5 border border-white/10">Postgres</span>
-            <span class="px-5 py-3 rounded-xl bg-white/5 border border-white/10">Drizzle</span>
-            <span class="px-5 py-3 rounded-xl bg-white/5 border border-white/10">Express</span>
-            <span class="px-5 py-3 rounded-xl bg-white/5 border border-white/10 text-blue-400">React 19</span>
-            <span class="px-5 py-3 rounded-xl bg-white/5 border border-white/10 text-emerald-400">Playwright</span>
-          </div>
-
-          <div class="pt-8">
-            <a class="inline-block bg-white text-black font-bold text-4xl px-12 py-6 rounded-full shadow-[0_0_40px_rgba(255,255,255,0.3)]">
-              Test Live Demo: /dashboard?demo=true
-            </a>
-          </div>
-        </div>
-      </div>
-    </div>
-
   </div>
-
-  <script>
-    // Scale standard 1080x1920 dynamically to fit whatever physical window size exists
-    function scaleContainer() {
-      const container = document.querySelector('.canvas-container');
-      const maxH = window.innerHeight * 0.95;
-      const aspectScale = maxH / 1920;
-      container.style.zoom = aspectScale;
-    }
-    window.addEventListener('resize', scaleContainer);
-    scaleContainer();
-  </script>
 </body>
 </html>

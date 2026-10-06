@@ -1,14 +1,13 @@
-Resolving biometric latency, state race conditions during peak clock-in hours, and fragmented dual-schema legacy databases requires more than a standard CRUD app. We needed a verifiable, idempotent state engine for workforce presence. TrackWise is our answer to the bottlenecks of enterprise identity bridging.
+Workforce presence platforms break at the endpoints: flaky factory network retries during shift-change, legacy schema collisions, and missed presence checks due to blocked audio assets. We engineered TrackWise to guarantee idempotent state and 32-byte hardened dual-schema resolution—without the unreliability.
 
-The Stack: React 19, TypeScript, Tailwind CSS, Node.js, Express, Drizzle ORM, PostgreSQL, Playwright.
+Here's how we solved the architectural bottlenecks natively:
 
-Core Engineering Solutions:
-• Dual-schema lookup engine bridging modern and legacy auth without downtime.
-• Idempotent state handling to guarantee single-session truth across flaky network drops.
-• Zero-latency Web Audio API watchdog for precise interval presence checks.
-• 32-byte JWT fail-fast guard resolving IDOR risks at the edge.
+↳ Dual-Schema Identity Engine: Secure routing that normalizes auth across legacy `public.users` and `modern.users` in a single transaction. Zero downtime during identity migrations.
+↳ Idempotent Shift Engine: Conflict-free concurrent punch resolution. If a spotty network triggers three POST retry spikes, the engine guarantees a single consistent shift state.
+↳ Native Web Audio Watchdog: A 30-minute presence ping generated purely via the browser's native AudioContext. No external MP3 assets to block, cache, or fail.
+↳ Enterprise Route Shielding: Fail-fast 32-byte JWT guard, cryptographic IDOR defense, and strict ingress rate-limiting before the router even touches the DB.
 
-Test the Live Demo (Zero-DB mode): https://trackwise-client.onrender.com/dashboard?demo=true
-GitHub Repository: https://github.com/Aby020/TrackWise
+TrackWise is a high-assurance operations portal built for zero-trust environments.
 
-#SoftwareEngineering #TypeScript #PostgreSQL #SystemDesign #FullStack
+Live Demo: https://trackwise-client.onrender.com/dashboard?demo=true
+Repo: https://github.com/Aby020/TrackWise
